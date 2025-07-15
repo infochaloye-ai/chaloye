@@ -150,48 +150,56 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* Why Choose Us Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose Letmetrek?</h2>
-            <p className="text-xl text-gray-600">We're committed to providing you with the best trekking experience</p>
+      {/* Why Choose Us + Testimonials Blended Section */}
+      <section className="pb-0 bg-gradient-to-br from-green-50 via-white to-green-100 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none select-none opacity-40" style={{background: 'radial-gradient(circle at 70% 30%, #bbf7d0 0%, transparent 70%)'}} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-20 pt-24">
+            <h2 className="text-5xl font-extrabold text-gray-900 mb-6 tracking-tight drop-shadow-lg">Why Choose <span className='text-green-600'>Letmetrek?</span></h2>
+            <p className="text-2xl text-gray-700 font-medium">We're committed to providing you with the best trekking experience</p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-24">
             {features.map((feature, index) => (
-              <div key={index} className="text-center group">
-                <div className="bg-green-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 group-hover:bg-green-200 transition-colors">
-                  <feature.icon className="h-8 w-8 text-green-600 mx-auto" />
+              <div key={index} className="group bg-white/80 backdrop-blur-lg border border-white/60 rounded-2xl shadow-2xl p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-emerald-200/60 hover:bg-white/90">
+                <div className="bg-gradient-to-br from-green-200 via-green-100 to-white rounded-full p-6 mb-6 shadow-lg group-hover:from-green-300 group-hover:to-green-100 transition-all duration-300">
+                  <feature.icon className="h-12 w-12 text-green-600 drop-shadow-md" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3 drop-shadow-sm">{feature.title}</h3>
+                <p className="text-gray-700 text-lg font-medium mb-2">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">What Our Adventurers Say</h2>
-            <p className="text-xl text-gray-600">Real experiences from real people</p>
+        {/* SVG Wave Transition */}
+        <div className="relative z-0 -mt-16 mb-0">
+          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-32">
+            <path fill="url(#blendGradient)" d="M0,80 C360,160 1080,0 1440,80 L1440,120 L0,120 Z" />
+            <defs>
+              <linearGradient id="blendGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#bbf7d0" />
+                <stop offset="100%" stopColor="#f0fdf4" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        {/* Testimonials Section (blended) */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pb-24">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl font-extrabold text-gray-900 mb-6 tracking-tight drop-shadow-lg">What Our <span className='text-green-600'>Adventurers</span> Say</h2>
+            <p className="text-2xl text-gray-700 font-medium">Real experiences from real people</p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg p-6">
-                <div className="flex items-center mb-4">
+              <div key={index} className="bg-white/80 backdrop-blur-lg border border-white/60 rounded-2xl shadow-2xl p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-emerald-200/60 hover:bg-white/90">
+                <div className="flex items-center mb-6">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-yellow-500 fill-current" />
+                    <Star key={i} className="h-7 w-7 text-yellow-400 drop-shadow fill-yellow-300" />
                   ))}
                 </div>
-                <p className="text-gray-600 mb-4 italic">"{testimonial.comment}"</p>
-                <div className="border-t pt-4">
-                  <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                  <div className="text-sm text-gray-600">{testimonial.trip}</div>
+                <p className="text-gray-700 text-lg italic mb-6">"{testimonial.comment}"</p>
+                <div className="border-t border-gray-200 pt-6 w-full">
+                  <div className="font-bold text-xl text-green-700 mb-1 drop-shadow">{testimonial.name}</div>
+                  <div className="text-base text-gray-600">{testimonial.trip}</div>
                 </div>
               </div>
             ))}

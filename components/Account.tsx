@@ -17,7 +17,7 @@ import {
   AlertCircle,
   XCircle
 } from 'lucide-react';
-import { useAuth } from '../components/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const Account = () => {
   const { user, bookings, logout, updateProfile, cancelBooking, isLoading } = useAuth();

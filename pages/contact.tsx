@@ -27,7 +27,7 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="relative text-white" style={{ minHeight: '380px' }}>
+      <div className="relative text-white mt-8 md:mt-16" style={{ minHeight: '380px' }}>
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
           style={{ backgroundImage: 'url(https://images.pexels.com/photos/840667/pexels-photo-840667.jpeg)' }}

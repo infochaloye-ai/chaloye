@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { trips as tripsData } from '../data/trips';
 
 interface User {
   id: string;
@@ -22,9 +23,20 @@ interface Booking {
   bookingDate: string;
 }
 
+export interface CartItem {
+  id: number; // trip id
+  name: string;
+  image: string;
+  price: number;
+  quantity: number;
+  location: string;
+  duration: string;
+}
+
 interface AuthContextType {
   user: User | null;
   bookings: Booking[];
+  cart: CartItem[];
   login: (email: string, password: string) => Promise<boolean>;
   signup: (userData: {
     email: string;
@@ -38,6 +50,10 @@ interface AuthContextType {
   updateProfile: (userData: Partial<User>) => Promise<boolean>;
   addBooking: (booking: Omit<Booking, 'id' | 'bookingDate'>) => void;
   cancelBooking: (bookingId: string) => void;
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (tripId: number) => void;
+  clearCart: () => void;
+  updateCartItem: (tripId: number, quantity: number) => void;
   isLoading: boolean;
 }
 
@@ -54,24 +70,27 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Simulate loading user data on app start
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     const savedBookings = localStorage.getItem('bookings');
-    
+    const savedCart = localStorage.getItem('cart');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
     if (savedBookings) {
       setBookings(JSON.parse(savedBookings));
     }
-    
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
+    }
     setIsLoading(false);
   }, []);
 
-  // Save to localStorage whenever user or bookings change
+  // Save to localStorage whenever user, bookings, or cart change
   useEffect(() => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
@@ -83,6 +102,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     localStorage.setItem('bookings', JSON.stringify(bookings));
   }, [bookings]);
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
@@ -129,8 +152,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     setBookings([]);
+    setCart([]);
     localStorage.removeItem('user');
     localStorage.removeItem('bookings');
+    localStorage.removeItem('cart');
   };
 
   const resetPassword = async (email: string): Promise<boolean> => {
@@ -168,9 +193,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
+  // CART ACTIONS
+  const addToCart = (item: CartItem) => {
+    setCart(prev => {
+      const existing = prev.find(ci => ci.id === item.id);
+      if (existing) {
+        return prev.map(ci => ci.id === item.id ? { ...ci, quantity: ci.quantity + item.quantity } : ci);
+      }
+      return [item, ...prev];
+    });
+  };
+
+  const removeFromCart = (tripId: number) => {
+    setCart(prev => prev.filter(ci => ci.id !== tripId));
+  };
+
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  const updateCartItem = (tripId: number, quantity: number) => {
+    setCart(prev => prev.map(ci => ci.id === tripId ? { ...ci, quantity } : ci));
+  };
+
   const value: AuthContextType = {
     user,
     bookings,
+    cart,
     login,
     signup,
     logout,
@@ -178,6 +227,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateProfile,
     addBooking,
     cancelBooking,
+    addToCart,
+    removeFromCart,
+    clearCart,
+    updateCartItem,
     isLoading
   };
 
@@ -185,5 +238,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
+  );
+};
+
+// TRIPS CONTEXT
+interface Trip {
+  id: number;
+  name: string;
+  location: string;
+  duration: string;
+  price: number;
+  difficulty: string;
+  image: string;
+  description: string;
+  bestTime: string;
+  altitude: string;
+  groupSize: string;
+  itinerary: any[];
+  inclusions: string[];
+  exclusions: string[];
+}
+
+const TripsContext = createContext<Trip[] | undefined>(undefined);
+export const useTrips = () => {
+  const context = useContext(TripsContext);
+  if (context === undefined) {
+    throw new Error('useTrips must be used within a TripsProvider');
+  }
+  return context;
+};
+
+export const TripsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [trips, setTrips] = useState<Trip[]>([]);
+  useEffect(() => {
+    setTrips(tripsData);
+  }, []);
+  return (
+    <TripsContext.Provider value={trips}>
+      {children}
+    </TripsContext.Provider>
   );
 }; 

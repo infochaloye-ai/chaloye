@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Mountain, ArrowLeft, Check } from 'lucide-react';
-import { useAuth } from '../components/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');

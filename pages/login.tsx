@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Eye, EyeOff, Mail, Lock, Mountain } from 'lucide-react';
-import { useAuth } from '../components/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({

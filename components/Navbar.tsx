@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Menu, X, Mountain, Search, ShoppingCart, User, Eye, EyeOff, Facebook, Github } from 'lucide-react';
-import { getCurrentUser, removeCurrentUser } from './AuthPanel';
+import { useAuth } from '../context/AuthContext';
+import CartModal from './CartModal';
+import ReactDOM from 'react-dom';
+import SearchModal from './SearchModal';
 
 // Modal with animation and accessibility
 const Modal = ({ open, onClose, children }: { open: boolean, onClose: () => void, children: React.ReactNode }) => {
@@ -172,29 +175,19 @@ const AuthModal = ({ open, mode, onClose, onAuth, setMode }: {
   );
 };
 
-const SearchModal = ({ open, onClose }: { open: boolean, onClose: () => void }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (open && inputRef.current) inputRef.current.focus();
-  }, [open]);
-  return (
-    <Modal open={open} onClose={onClose}>
-      <h2 className="text-xl font-bold mb-4">Search</h2>
-      <input ref={inputRef} className="w-full mb-2 p-2 border rounded" placeholder="Search trips, destinations..." />
-      <button className="w-full bg-green-600 text-white py-2 rounded" onClick={onClose}>Close</button>
-    </Modal>
-  );
-};
-
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [authModal, setAuthModal] = useState<'login' | 'signup' | 'forgot' | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // mock auth state
-  const [user, setUser] = useState<any>(null);
-  const [cartCount, setCartCount] = useState(2); // mock cart count
+  const [cartOpen, setCartOpen] = useState(false);
+  const { cart, user, logout } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const navItems = [
     { path: '/', label: 'Home' },
@@ -216,140 +209,155 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    setUser(getCurrentUser());
-  }, []);
-
   // Determine if navbar should be transparent
   const shouldBeTransparent = isHomePage && !isScrolled;
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      shouldBeTransparent ? 'bg-transparent' : 'bg-white shadow-lg'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo - Left */}
-          <Link href="/" className="flex items-center space-x-2">
-            <Mountain className="h-8 w-8 text-green-600" />
-            <span className={`text-2xl font-bold transition-colors duration-300 ${
-              shouldBeTransparent ? 'text-white' : 'text-gray-800'
-            }`}>LetmeTrek</span>
-          </Link>
+    <>
+      <nav className={`fixed top-0 left-0 right-0 w-full z-50 pointer-events-auto transition-all duration-300 block md:block ${
+        shouldBeTransparent ? 'bg-transparent' : 'bg-white/80 backdrop-blur-lg border-b border-white/60 shadow-lg'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo - Left */}
+            <Link href="/" className="flex items-center space-x-2">
+              <Mountain className="h-8 w-8 text-green-600" />
+              <span className={`text-2xl font-bold transition-colors duration-300 ${
+                shouldBeTransparent ? 'text-white' : 'text-gray-800'
+              }`}>LetmeTrek</span>
+            </Link>
 
-          {/* Navigation Items - Center */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${
-                  isActive(item.path) 
-                    ? shouldBeTransparent 
-                      ? 'text-green-300 bg-green-900/20' 
-                      : 'text-green-600 bg-green-50'
-                    : shouldBeTransparent
-                      ? 'text-white hover:text-green-300'
-                      : 'text-gray-700 hover:text-green-600'
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
+            {/* Navigation Items - Center */}
+            <div className="hidden md:flex items-center space-x-8">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${
+                    isActive(item.path) 
+                      ? shouldBeTransparent 
+                        ? 'text-green-300 bg-green-900/20' 
+                        : 'text-green-600 bg-green-50'
+                      : shouldBeTransparent
+                        ? 'text-white hover:text-green-300'
+                        : 'text-gray-700 hover:text-green-600'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
 
-          {/* Icon Navigation - Right */}
-          <div className="hidden md:flex items-center space-x-4">
-            <button
-              className={`p-2 rounded-md transition-colors duration-300 ${
-                shouldBeTransparent 
-                  ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
-                  : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
-              }`}
-              aria-label="Search"
-              onClick={() => setSearchOpen(true)}
-            >
-              <Search className="h-5 w-5" />
-            </button>
-            <button
-              className={`relative p-2 rounded-md transition-colors duration-300 ${
-                shouldBeTransparent 
-                  ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
-                  : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
-              }`}
-              aria-label="Cart"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full px-1.5 py-0.5 font-bold">{cartCount}</span>
-              )}
-            </button>
-            {user ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-green-700">{user.email}</span>
-                <button
-                  className="p-2 rounded-md text-red-600 hover:bg-red-100 transition-colors"
-                  onClick={() => { removeCurrentUser(); window.location.href = '/login'; }}
-                >Logout</button>
-              </div>
-            ) : (
-              <Link
-                href="/login"
+            {/* Icon Navigation - Right */}
+            <div className="hidden md:flex items-center space-x-4">
+              <button
                 className={`p-2 rounded-md transition-colors duration-300 ${
-                  isActive('/login')
-                    ? shouldBeTransparent 
-                      ? 'text-green-300 bg-green-900/20' 
-                      : 'text-green-600 bg-green-50'
-                    : shouldBeTransparent 
-                      ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
-                      : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                  shouldBeTransparent 
+                    ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
+                    : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
                 }`}
-                aria-label="Account"
+                aria-label="Search"
+                onClick={() => setSearchOpen(true)}
               >
-                <User className="h-5 w-5" />
-              </Link>
-            )}
-          </div>
+                <Search className="h-5 w-5" />
+              </button>
+              <button
+                className={`relative p-2 rounded-md transition-colors duration-300 ${
+                  shouldBeTransparent 
+                    ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
+                    : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                }`}
+                aria-label="Cart"
+                onClick={() => setCartOpen(true)}
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cart.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full px-1.5 py-0.5 font-bold">{cart.length}</span>
+                )}
+              </button>
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-green-700">{`${user.firstName} ${user.lastName}`}</span>
+                  <button
+                    className="p-2 rounded-md text-red-600 hover:bg-red-100 transition-colors"
+                    onClick={logout}
+                  >Logout</button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className={`p-2 rounded-md transition-colors duration-300 ${
+                    isActive('/login')
+                      ? shouldBeTransparent 
+                        ? 'text-green-300 bg-green-900/20' 
+                        : 'text-green-600 bg-green-50'
+                      : shouldBeTransparent 
+                        ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
+                        : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                  }`}
+                  aria-label="Account"
+                >
+                  <User className="h-5 w-5" />
+                </Link>
+              )}
+            </div>
 
-          {/* Mobile header items */}
-          <div className="md:hidden flex items-center space-x-3">
-            <button
-              className={`p-2 rounded-md transition-colors duration-300 ${
-                shouldBeTransparent 
-                  ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
-                  : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
-              }`}
-              onClick={() => setSearchOpen(true)}
-            >
-              <Search className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className={`focus:outline-none transition-colors duration-300 ${
-                shouldBeTransparent ? 'text-white hover:text-green-300' : 'text-gray-700 hover:text-green-600'
-              }`}
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            {/* Mobile header items */}
+            <div className={`md:hidden flex items-center space-x-3 ${shouldBeTransparent ? '' : 'bg-white/80 backdrop-blur-lg border border-white/60 rounded-full shadow-md px-2 py-1'}`}>
+              <button
+                className={`p-2 rounded-md transition-colors duration-300 ${
+                  shouldBeTransparent 
+                    ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
+                    : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                }`}
+                onClick={() => setSearchOpen(true)}
+              >
+                <Search className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className={`focus:outline-none transition-colors duration-300 ${
+                  shouldBeTransparent ? 'text-white hover:text-green-300' : 'text-gray-700 hover:text-green-600'
+                }`}
+              >
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Auth Modals */}
+        <AuthModal
+          open={!!authModal}
+          mode={authModal || 'login'}
+          onClose={() => setAuthModal(null)}
+          setMode={setAuthModal as (mode: 'login' | 'signup' | 'forgot') => void}
+          onAuth={async (email, password, mode) => {
+            // Mock login/signup logic
+            await new Promise(res => setTimeout(res, 1000));
+            if (!email || !password) throw new Error('Email and password required');
+            setAuthModal(null);
+          }}
+        />
+        {/* Search Modal */}
+        <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      </nav>
+      {/* Mobile Navigation Portal */}
+      {mounted && ReactDOM.createPortal(
         <div className={`md:hidden fixed inset-0 z-50 transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
           {/* Backdrop */}
           <div 
-            className={`absolute inset-0 bg-black transition-opacity duration-300 ${
-              isOpen ? 'opacity-50' : 'opacity-0 pointer-events-none'
+            className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+              isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
             onClick={() => setIsOpen(false)}
           />
-          
           {/* Mobile Menu Panel */}
-          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl flex flex-col">
+          <div className="absolute right-0 top-0 h-full w-80 bg-white/80 backdrop-blur-lg border-l border-white/60 shadow-2xl rounded-l-2xl flex flex-col overflow-hidden ">
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b">
+            <div className="flex items-center justify-between p-6 border-b border-white/60 bg-white/70 backdrop-blur-md">
               <div className="flex items-center space-x-2">
                 <Mountain className="h-8 w-8 text-green-600" />
                 <span className="text-2xl font-bold text-gray-800">LetmeTrek</span>
@@ -361,7 +369,6 @@ const Navbar = () => {
                 <X className="h-6 w-6" />
               </button>
             </div>
-
             {/* Navigation Items */}
             <div className="flex-1 px-6 py-8">
               <div className="space-y-4">
@@ -369,10 +376,10 @@ const Navbar = () => {
                   <Link
                     key={item.path}
                     href={item.path}
-                    className={`block px-4 py-3 rounded-lg text-lg font-medium transition-colors ${
+                    className={`block px-5 py-3 rounded-xl text-lg font-semibold transition-all duration-200 shadow-sm ${
                       isActive(item.path)
-                        ? 'text-green-600 bg-green-50'
-                        : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                        ? 'text-green-700 bg-green-100 shadow-md'
+                        : 'text-gray-800 hover:text-green-700 hover:bg-green-50'
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
@@ -380,19 +387,19 @@ const Navbar = () => {
                   </Link>
                 ))}
                 {/* Divider for special actions */}
-                <hr className="my-6 border-gray-200" />
+                <hr className="my-6 border-white/60" />
                 {/* Cart and Account as distinct text with icons and theme */}
-                <button className="w-full flex items-center gap-3 text-left px-4 py-3 font-semibold text-gray-800 bg-gray-100 hover:bg-green-50 hover:text-green-700 rounded-lg transition-colors mb-2 relative" aria-label="Cart">
+                <button className="w-full flex items-center gap-3 text-left px-5 py-3 font-semibold text-gray-800 bg-white/70 hover:bg-green-50 hover:text-green-700 rounded-xl transition-all duration-200 shadow-sm mb-2 relative" aria-label="Cart" onClick={() => { setCartOpen(true); setIsOpen(false); }}>
                   <ShoppingCart className="h-5 w-5 text-green-600" />
                   Cart
-                  {cartCount > 0 && (
-                    <span className="ml-auto bg-green-600 text-white text-xs rounded-full px-2 py-0.5 font-bold">{cartCount}</span>
+                  {cart.length > 0 && (
+                    <span className="ml-auto bg-green-600 text-white text-xs rounded-full px-2 py-0.5 font-bold">{cart.length}</span>
                   )}
                 </button>
                 {user ? (
                   <div className="w-full flex flex-col gap-2">
                     <button
-                      className={`w-full flex items-center gap-3 text-left px-4 py-3 font-semibold rounded-lg transition-colors mb-2 text-green-700 bg-green-50`}
+                      className="w-full flex items-center gap-3 text-left px-5 py-3 font-semibold rounded-xl transition-all duration-200 text-green-700 bg-green-100 shadow-md mb-2"
                       onClick={() => {
                         setIsOpen(false);
                         router.push('/account');
@@ -400,16 +407,11 @@ const Navbar = () => {
                       aria-label="Account"
                     >
                       <img src={user.avatar} alt="avatar" className="h-5 w-5 rounded-full border border-green-600" />
-                      {user.name}
+                      {`${user.firstName} ${user.lastName}`}
                     </button>
                     <button
-                      className="w-full flex items-center gap-3 text-left px-4 py-3 font-semibold rounded-lg transition-colors mb-2 text-red-700 bg-red-50 hover:bg-red-100"
-                      onClick={() => {
-                        removeCurrentUser();
-                        setIsLoggedIn(false);
-                        setUser(null);
-                        setIsOpen(false);
-                      }}
+                      className="w-full flex items-center gap-3 text-left px-5 py-3 font-semibold rounded-xl transition-all duration-200 text-red-700 bg-red-50 hover:bg-red-100 shadow-sm mb-2"
+                      onClick={logout}
                       aria-label="Logout"
                     >
                       <X className="h-5 w-5" />
@@ -418,11 +420,7 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <button
-                    className={`w-full flex items-center gap-3 text-left px-4 py-3 font-semibold rounded-lg transition-colors mb-2 ${
-                      isActive('/account')
-                        ? 'text-green-700 bg-green-50'
-                        : 'text-gray-800 bg-gray-100 hover:bg-green-50 hover:text-green-700'
-                    }`}
+                    className="w-full flex items-center gap-3 text-left px-5 py-3 font-semibold rounded-xl transition-all duration-200 text-gray-800 bg-white/70 hover:bg-green-50 hover:text-green-700 shadow-sm mb-2"
                     onClick={() => {
                       setAuthModal('login');
                     }}
@@ -434,30 +432,12 @@ const Navbar = () => {
                 )}
               </div>
             </div>
-
-
           </div>
-        </div>
-      </div>
-
-      {/* Auth Modals */}
-      <AuthModal
-        open={!!authModal}
-        mode={authModal || 'login'}
-        onClose={() => setAuthModal(null)}
-        setMode={setAuthModal as (mode: 'login' | 'signup' | 'forgot') => void}
-        onAuth={async (email, password, mode) => {
-          // Mock login/signup logic
-          await new Promise(res => setTimeout(res, 1000));
-          if (!email || !password) throw new Error('Email and password required');
-          setIsLoggedIn(true);
-          setUser({ name: 'Shankhan', avatar: 'https://i.pravatar.cc/100?u=shankhan' });
-          setAuthModal(null);
-        }}
-      />
-      {/* Search Modal */}
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
-    </nav>
+        </div>,
+        document.body
+      )}
+      <CartModal open={cartOpen} onClose={() => setCartOpen(false)} />
+    </>
   );
 };
 

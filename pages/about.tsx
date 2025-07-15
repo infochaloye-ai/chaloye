@@ -56,13 +56,13 @@ const About = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative text-white" style={{ minHeight: '380px' }}>
+      <div className="relative text-white mt-8 md:mt-16" style={{ minHeight: '380px' }}>
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
           style={{ backgroundImage: 'url(https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1)' }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-800 opacity-60" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 flex flex-col items-start justify-center min-h-[380px]">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 flex flex-col items-center text-center md:items-start md:text-left justify-center min-h-[380px]">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">About Letmetrek</h1>
           <p className="text-xl text-green-100 max-w-3xl">
             We are passionate adventurers dedicated to creating unforgettable trekking experiences 
