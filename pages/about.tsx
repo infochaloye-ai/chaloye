@@ -1,11 +1,11 @@
 import React from 'react';
-import { Mountain, Users, Award, Shield, Heart, Globe } from 'lucide-react';
+import { Mountain, Users, Award, Shield, Heart, Globe, Sparkles, Compass } from 'lucide-react';
 
 const About = () => {
   const stats = [
-    { number: '500+', label: 'Happy Adventurers' },
+    { number: '12,500+', label: 'Happy Trekkers' },
     { number: '15+', label: 'Years Experience' },
-    { number: '50+', label: 'Destinations' },
+    { number: '60+', label: 'Alpine Routes' },
     { number: '100%', label: 'Safety Record' }
   ];
 
@@ -33,181 +33,127 @@ const About = () => {
   const values = [
     {
       icon: Shield,
-      title: 'Safety First',
-      description: 'Your safety is our top priority. We follow strict safety protocols and maintain the highest standards.'
+      title: 'Uncompromised Safety',
+      description: 'Your safety is our relentless focus. Satellite tracking, oxygen, and emergency telemetry on every trip.'
     },
     {
       icon: Heart,
       title: 'Passion for Adventure',
-      description: 'We live and breathe adventure, sharing our passion for the mountains with every traveler.'
+      description: 'We live and breathe high-altitude wilderness, sharing secret spots and cultural immersion.'
     },
     {
       icon: Globe,
-      title: 'Sustainable Tourism',
-      description: 'We are committed to responsible travel that respects local communities and environments.'
+      title: 'Eco & Sustainable',
+      description: 'Zero-trace leave policy and direct economic support to local Sherpa communities.'
     },
     {
       icon: Users,
-      title: 'Expert Guides',
-      description: 'Our experienced guides are certified professionals with deep knowledge of local terrain.'
+      title: 'Master Expedition Leaders',
+      description: 'Our lead guides possess certified UIAGM/IFMGA credentials and decades of summit success.'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="relative text-white mt-8 md:mt-16" style={{ minHeight: '380px' }}>
+    <div className="min-h-screen bg-[#fcfcfd] text-slate-900 font-sans pt-20">
+      {/* Header Hero */}
+      <div className="relative py-24 bg-slate-900 text-white border-b border-gray-200">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
-          style={{ backgroundImage: 'url(https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1)' }}
+          className="absolute inset-0 bg-cover bg-center opacity-30 filter brightness-90"
+          style={{ backgroundImage: 'url(https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg)' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-800 opacity-60" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 flex flex-col items-center text-center md:items-start md:text-left justify-center min-h-[380px]">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">About Letmetrek</h1>
-          <p className="text-xl text-green-100 max-w-3xl">
-            We are passionate adventurers dedicated to creating unforgettable trekking experiences 
-            while prioritizing safety, sustainability, and authentic connections with nature.
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-xs font-bold uppercase tracking-widest mb-6">
+            <Sparkles className="w-4 h-4" />
+            <span>Pioneering Alpine Expeditions</span>
+          </div>
+
+          <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight mb-6">
+            About <span className="text-emerald-400">Chal Oye</span>
+          </h1>
+          <p className="text-gray-300 text-lg sm:text-2xl max-w-3xl mx-auto leading-relaxed">
+            Crafting premium, safe, and life-defining wilderness adventures since 2011.
           </p>
         </div>
       </div>
 
-      {/* Stats Section */}
-      <div className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-green-600 mb-2">{stat.number}</div>
-                <div className="text-gray-600">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+      {/* Stats Ribbon */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-8 bg-white border border-gray-200 shadow-xl">
+          {stats.map((s, idx) => (
+            <div key={idx} className="text-center border-r border-gray-100 last:border-r-0">
+              <div className="text-3xl sm:text-4xl font-black text-slate-900 mb-1">{s.number}</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-emerald-700">{s.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Our Story Section */}
-      <div className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Our Story</h2>
-              <div className="space-y-4 text-gray-600">
-                <p>
-                  Founded in 2008 by passionate mountaineer Sarah Johnson, Letmetrek began as a dream 
-                  to share the transformative power of mountain adventures with fellow explorers. What 
-                  started as weekend trips with friends has grown into a trusted adventure company.
-                </p>
-                <p>
-                  Over the years, we've led thousands of adventurers to some of the world's most 
-                  spectacular destinations. From the towering peaks of the Himalayas to the rugged 
-                  trails of Patagonia, each journey is carefully crafted to provide not just adventure, 
-                  but meaningful experiences that last a lifetime.
-                </p>
-                <p>
-                  Our commitment to safety, sustainability, and authentic experiences has earned us 
-                  the trust of adventurers worldwide. We believe that the mountains teach us about 
-                  ourselves and our connection to nature, and we're honored to be part of that journey.
-                </p>
-              </div>
-            </div>
-            <div className="relative">
-              <img
-                src="https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=1"
-                alt="Mountain adventure"
-                className="rounded-lg shadow-lg"
-              />
-            </div>
-          </div>
+      {/* Our Values Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-emerald-700 text-xs font-bold tracking-widest uppercase mb-3">Core Principles</div>
+          <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+            What Drives Our <span className="text-emerald-600">Mission</span>
+          </h2>
         </div>
-      </div>
 
-      {/* Values Section */}
-      <div className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Values</h2>
-            <p className="text-xl text-gray-600">The principles that guide every adventure we create</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {values.map((value, index) => (
-              <div key={index} className="text-center group">
-                <div className="bg-green-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 group-hover:bg-green-200 transition-colors">
-                  <value.icon className="h-8 w-8 text-green-600 mx-auto" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">{value.title}</h3>
-                <p className="text-gray-600">{value.description}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {values.map((v, idx) => (
+            <div key={idx} className="bg-white p-8 border border-gray-200 hover:border-emerald-600 hover:shadow-lg transition-all duration-300">
+              <div className="p-4 bg-emerald-50 text-emerald-700 border border-emerald-200 w-fit mb-6">
+                <v.icon className="w-6 h-6" />
               </div>
-            ))}
-          </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">{v.title}</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">{v.description}</p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Team Section */}
-      <div className="py-20 bg-gray-50">
+      <div className="py-24 bg-gray-50 border-t border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Meet Our Team</h2>
-            <p className="text-xl text-gray-600">The experienced guides who make your adventures possible</p>
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="text-emerald-700 text-xs font-bold tracking-widest uppercase mb-3">Leadership</div>
+            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+              Meet Our Expedition <span className="text-emerald-600">Leaders</span>
+            </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {team.map((member, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-full h-64 object-cover"
-                />
+            {team.map((t, idx) => (
+              <div key={idx} className="bg-white border border-gray-200 hover:border-emerald-600 hover:shadow-lg transition-all">
+                <div className="h-72 overflow-hidden relative bg-gray-100">
+                  <img src={t.image} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
-                  <p className="text-green-600 font-semibold mb-3">{member.role}</p>
-                  <p className="text-gray-600">{member.description}</p>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-1">{t.name}</h3>
+                  <p className="text-emerald-700 text-xs font-bold uppercase tracking-wider mb-4">{t.role}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed">{t.description}</p>
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Mission Section */}
-      <div className="py-20 bg-green-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="flex justify-center mb-6">
-              <Mountain className="h-16 w-16 text-green-200" />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Our Mission</h2>
-            <p className="text-xl text-green-100 max-w-4xl mx-auto leading-relaxed">
-              To inspire and guide adventurers in discovering the world's most spectacular mountain 
-              destinations while fostering a deep respect for nature, promoting sustainable tourism, 
-              and creating transformative experiences that connect people with the natural world and 
-              themselves.
-            </p>
           </div>
         </div>
       </div>
 
       {/* Certifications Section */}
-      <div className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Certifications & Affiliations</h2>
-            <p className="text-xl text-gray-600">Our commitment to professional standards and safety</p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-black text-slate-900 mb-12 uppercase tracking-wider">Global Certifications & Affiliations</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              'International Mountain Guiding Association',
-              'American Alpine Club',
-              'Leave No Trace Certified',
-              'Wilderness First Aid Certified'
+              'UIAGM / IFMGA Certified Guides',
+              'Wilderness Medical Society Partner',
+              'Leave No Trace Platinum Member',
+              'High-Altitude Rescue Alliance'
             ].map((cert, index) => (
-              <div key={index} className="text-center">
-                <div className="bg-green-100 rounded-full p-4 w-16 h-16 mx-auto mb-4">
-                  <Award className="h-8 w-8 text-green-600 mx-auto" />
+              <div key={index} className="p-6 bg-gray-50 border border-gray-200 flex flex-col items-center">
+                <div className="p-3 bg-emerald-100 text-emerald-700 mb-3">
+                  <Award className="h-6 w-6" />
                 </div>
-                <p className="text-gray-600 text-sm">{cert}</p>
+                <p className="text-slate-900 text-sm font-bold">{cert}</p>
               </div>
             ))}
           </div>

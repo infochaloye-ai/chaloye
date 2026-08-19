@@ -215,32 +215,40 @@ const Navbar = () => {
   return (
     <>
       <nav className={`fixed top-0 left-0 right-0 w-full z-50 pointer-events-auto transition-all duration-300 block md:block ${
-        shouldBeTransparent ? 'bg-transparent' : 'bg-white/80 backdrop-blur-lg border-b border-white/60 shadow-lg'
+        shouldBeTransparent 
+          ? 'bg-gradient-to-b from-black/85 via-black/40 to-transparent text-white' 
+          : 'bg-white/95 backdrop-blur-md border-b border-zinc-200 text-zinc-900 shadow-xs'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-20">
             {/* Logo - Left */}
-            <Link href="/" className="flex items-center space-x-2">
-              <Mountain className="h-8 w-8 text-green-600" />
-              <span className={`text-2xl font-bold transition-colors duration-300 ${
-                shouldBeTransparent ? 'text-white' : 'text-gray-800'
-              }`}>LetmeTrek</span>
+            <Link href="/" className="flex items-center space-x-3 group">
+              <div className="p-2.5 bg-zinc-900 text-white font-black text-xs tracking-tighter uppercase">
+                CO
+              </div>
+              <span className="text-xl font-black tracking-tighter uppercase">
+                Chal<span className="text-emerald-600 font-extrabold ml-1">Oye</span>
+              </span>
             </Link>
 
             {/* Navigation Items - Center */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className={`hidden md:flex items-center space-x-0 border ${
+              shouldBeTransparent ? 'border-white/20 bg-black/40' : 'border-zinc-200 bg-zinc-50'
+            }`}>
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${
+                  className={`px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all duration-150 border-r last:border-r-0 ${
+                    shouldBeTransparent ? 'border-white/20' : 'border-zinc-200'
+                  } ${
                     isActive(item.path) 
-                      ? shouldBeTransparent 
-                        ? 'text-green-300 bg-green-900/20' 
-                        : 'text-green-600 bg-green-50'
+                      ? shouldBeTransparent
+                        ? 'bg-white text-zinc-900'
+                        : 'bg-zinc-900 text-white' 
                       : shouldBeTransparent
-                        ? 'text-white hover:text-green-300'
-                        : 'text-gray-700 hover:text-green-600'
+                        ? 'hover:bg-white/10 text-zinc-200'
+                        : 'hover:bg-zinc-200 text-zinc-800'
                   }`}
                 >
                   {item.label}
@@ -249,55 +257,51 @@ const Navbar = () => {
             </div>
 
             {/* Icon Navigation - Right */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-2">
               <button
-                className={`p-2 rounded-md transition-colors duration-300 ${
-                  shouldBeTransparent 
-                    ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
-                    : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                className={`p-2.5 border transition-all duration-150 ${
+                  shouldBeTransparent
+                    ? 'text-white border-white/20 hover:bg-white/20'
+                    : 'text-zinc-900 border-zinc-200 hover:bg-zinc-100'
                 }`}
                 aria-label="Search"
                 onClick={() => setSearchOpen(true)}
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4" />
               </button>
               <button
-                className={`relative p-2 rounded-md transition-colors duration-300 ${
-                  shouldBeTransparent 
-                    ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
-                    : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                className={`relative p-2.5 border transition-all duration-150 ${
+                  shouldBeTransparent
+                    ? 'text-white border-white/20 hover:bg-white/20'
+                    : 'text-zinc-900 border-zinc-200 hover:bg-zinc-100'
                 }`}
                 aria-label="Cart"
                 onClick={() => setCartOpen(true)}
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-4 w-4" />
                 {cart.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full px-1.5 py-0.5 font-bold">{cart.length}</span>
+                  <span className="absolute top-0 right-0 bg-emerald-600 text-white text-[9px] w-4 h-4 flex items-center justify-center font-black">{cart.length}</span>
                 )}
               </button>
               {user ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-green-700">{`${user.firstName} ${user.lastName}`}</span>
+                <div className="flex items-center gap-3 pl-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-emerald-600">{`${user.firstName}`}</span>
                   <button
-                    className="p-2 rounded-md text-red-600 hover:bg-red-100 transition-colors"
+                    className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-rose-600 border border-rose-200 bg-rose-50 hover:bg-rose-100 transition-all"
                     onClick={logout}
                   >Logout</button>
                 </div>
               ) : (
                 <Link
                   href="/login"
-                  className={`p-2 rounded-md transition-colors duration-300 ${
-                    isActive('/login')
-                      ? shouldBeTransparent 
-                        ? 'text-green-300 bg-green-900/20' 
-                        : 'text-green-600 bg-green-50'
-                      : shouldBeTransparent 
-                        ? 'text-white hover:text-green-300 hover:bg-green-900/20' 
-                        : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                  className={`p-2.5 border transition-all duration-150 ${
+                    shouldBeTransparent
+                      ? 'text-white border-white/20 hover:bg-white/20'
+                      : 'text-zinc-900 border-zinc-200 hover:bg-zinc-100'
                   }`}
                   aria-label="Account"
                 >
-                  <User className="h-5 w-5" />
+                  <User className="h-4 w-4" />
                 </Link>
               )}
             </div>

@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { X, Search } from 'lucide-react';
+import { X, Search, MapPin, Clock, ArrowRight, Compass } from 'lucide-react';
 import { useTrips } from '../context/AuthContext';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 interface SearchModalProps {
   open: boolean;
@@ -10,101 +12,145 @@ interface SearchModalProps {
 const SearchModal: React.FC<SearchModalProps> = ({ open, onClose }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const trips = useTrips();
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [filtered, setFiltered] = useState(trips);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+
+  const quickTags = ['Nepal', 'Himalayas', 'Moderate', 'Challenging', 'Everest'];
 
   useEffect(() => {
-    let scrollY = 0;
     if (open) {
       setQuery('');
+      setActiveTag(null);
       setFiltered(trips);
       setTimeout(() => inputRef.current?.focus(), 100);
-      scrollY = window.scrollY;
-      document.body.classList.add('overflow-hidden');
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-    } else {
-      const y = document.body.style.top;
-      document.body.classList.remove('overflow-hidden');
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      if (y) window.scrollTo(0, parseInt(y || '0') * -1);
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
     }
-    return () => {
-      const y = document.body.style.top;
-      document.body.classList.remove('overflow-hidden');
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      if (y) window.scrollTo(0, parseInt(y || '0') * -1);
-    };
-  }, [open, trips]);
+  }, [open, trips, onClose]);
 
   useEffect(() => {
-    if (!query) {
-      setFiltered(trips);
-    } else {
-      setFiltered(
-        trips.filter(trip =>
-          trip.name.toLowerCase().includes(query.toLowerCase()) ||
-          trip.location.toLowerCase().includes(query.toLowerCase())
-        )
+    let list = trips;
+    if (query) {
+      const q = query.toLowerCase();
+      list = list.filter(t =>
+        t.name.toLowerCase().includes(q) ||
+        t.location.toLowerCase().includes(q) ||
+        t.difficulty.toLowerCase().includes(q)
       );
     }
-  }, [query, trips]);
+    if (activeTag) {
+      const tag = activeTag.toLowerCase();
+      list = list.filter(t =>
+        t.name.toLowerCase().includes(tag) ||
+        t.location.toLowerCase().includes(tag) ||
+        t.difficulty.toLowerCase().includes(tag)
+      );
+    }
+    setFiltered(list);
+  }, [query, activeTag, trips]);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-300">
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl mx-auto rounded-2xl shadow-2xl bg-white/80 backdrop-blur-lg border border-white/60 p-0 overflow-hidden animate-modalIn">
-        {/* Close Button */}
-        <button
-          aria-label="Close search"
-          onClick={onClose}
-          className="absolute top-4 right-4 bg-white/70 hover:bg-gray-100 border border-gray-200 rounded-full p-2 shadow-sm transition-colors"
-        >
-          <X className="h-5 w-5 text-gray-500" />
-        </button>
-        {/* Header */}
-        <div className="px-8 pt-8 pb-4">
-          <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight mb-1">Search Trips</h2>
-          <p className="text-gray-500 text-sm">Find your next adventure by name or location</p>
+    <div className="fixed top-20 left-0 right-0 z-40 bg-white border-b-2 border-zinc-900 shadow-2xl animate-fadeIn text-zinc-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Inline Top Bar */}
+        <div className="flex items-center gap-4 border-b border-zinc-200 pb-4 mb-4">
+          <Search className="w-6 h-6 text-emerald-700 shrink-0" />
+          <input
+            ref={inputRef}
+            className="w-full bg-transparent text-xl sm:text-2xl font-black uppercase tracking-tight text-zinc-900 placeholder-zinc-400 focus:outline-none"
+            placeholder="Search peak, region (e.g. Everest, Nepal)..."
+            value={query}
+            onChange={e => {
+              setQuery(e.target.value);
+              setActiveTag(null);
+            }}
+          />
+          <button
+            onClick={onClose}
+            className="px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-black uppercase tracking-widest flex items-center gap-1.5 shrink-0 transition-all"
+          >
+            <span>Close</span>
+            <X className="w-4 h-4 text-emerald-400" />
+          </button>
         </div>
-        {/* Search Input */}
-        <div className="px-8 pb-4">
-          <div className="relative">
-            <input
-              ref={inputRef}
-              className="w-full py-3 pl-12 pr-4 rounded-xl border border-gray-200 bg-white/70 backdrop-blur focus:ring-2 focus:ring-green-200 focus:border-green-400 text-lg transition placeholder-gray-400"
-              placeholder="Search trips, destinations..."
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-          </div>
+
+        {/* Quick Filter Tags */}
+        <div className="flex items-center gap-2 mb-6 overflow-x-auto text-xs font-black">
+          <span className="text-zinc-400 uppercase tracking-widest text-[10px] shrink-0">Tags:</span>
+          {quickTags.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => {
+                if (activeTag === tag) {
+                  setActiveTag(null);
+                } else {
+                  setActiveTag(tag);
+                  setQuery('');
+                }
+              }}
+              className={`px-3 py-1 border text-[11px] uppercase tracking-wider transition-all shrink-0 ${
+                activeTag === tag
+                  ? 'bg-emerald-700 text-white border-emerald-700'
+                  : 'bg-zinc-100 text-zinc-800 border-zinc-300 hover:bg-zinc-200'
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
         </div>
-        {/* Results */}
-        <div className="max-h-80 overflow-y-auto px-8 pb-8">
+
+        {/* Search Results Grid */}
+        <div className="max-h-[340px] overflow-y-auto pr-2">
           {filtered.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-gray-400 text-lg">No trips found.</p>
+            <div className="text-center py-10 border border-dashed border-zinc-300">
+              <Compass className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+              <p className="text-zinc-900 font-black text-sm uppercase tracking-wider">No routes found</p>
+              <p className="text-zinc-500 text-xs font-medium">Try another keyword or filter tag.</p>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map(trip => (
-                <li key={trip.id} className="flex items-center py-5 gap-4 cursor-pointer hover:bg-green-50 rounded-xl px-2 transition" onClick={() => { window.location.href = `/trips/${trip.id}`; onClose(); }}>
-                  <img src={trip.image} alt={trip.name} className="w-16 h-16 object-cover rounded-xl border border-gray-200 shadow-sm" />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-gray-900 text-base line-clamp-1">{trip.name}</div>
-                    <div className="text-gray-500 text-xs mt-0.5">{trip.location} &bull; {trip.duration}</div>
+                <div
+                  key={trip.id}
+                  onClick={() => {
+                    router.push(`/trips/${trip.id}`);
+                    onClose();
+                  }}
+                  className="group p-3.5 bg-zinc-50 hover:bg-white border border-zinc-200 hover:border-zinc-900 transition-all flex items-center justify-between cursor-pointer"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <img
+                      src={trip.image}
+                      alt={trip.name}
+                      className="w-14 h-14 object-cover border border-zinc-300 group-hover:border-zinc-900 transition-colors"
+                    />
+                    <div>
+                      <h4 className="font-black text-zinc-900 text-sm uppercase tracking-tight group-hover:text-emerald-700 transition-colors">
+                        {trip.name}
+                      </h4>
+                      <div className="flex items-center gap-2 text-[11px] text-zinc-500 font-bold uppercase tracking-wider mt-1">
+                        <span>{trip.location}</span>
+                        <span>&bull;</span>
+                        <span>{trip.duration}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-green-600 font-bold text-lg">${trip.price}</div>
-                </li>
+
+                  <div className="text-right">
+                    <span className="text-sm font-black text-zinc-900 block">${trip.price}</span>
+                    <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:text-emerald-700 group-hover:translate-x-1 transition-all ml-auto mt-1" />
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       </div>
