@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInWithGoogle = useCallback(async (next = '/account') => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}${next.startsWith('/') ? next : '/account'}` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next.startsWith('/') ? next : '/account')}` },
     });
     return fail(error);
   }, []);
@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: input.email.trim(),
       password: input.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/account`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: { first_name: input.firstName.trim(), last_name: input.lastName.trim(), phone: input.phone?.trim() || null },
       },
     });
