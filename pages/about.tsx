@@ -1,166 +1,123 @@
 import React from 'react';
-import { Mountain, Users, Award, Shield, Heart, Globe, Sparkles, Compass } from 'lucide-react';
+import Head from 'next/head';
+import { ArrowRight } from 'lucide-react';
+import { useCMS } from '@/context/CMSContext';
+import PageHero from '@/components/site/PageHero';
+import Reveal from '@/components/site/Reveal';
+import { Avatar, ButtonLink, SectionHeading } from '@/components/site/ui';
+import { getIcon } from '@/lib/icons';
 
-const About = () => {
-  const stats = [
-    { number: '12,500+', label: 'Happy Trekkers' },
-    { number: '15+', label: 'Years Experience' },
-    { number: '60+', label: 'Alpine Routes' },
-    { number: '100%', label: 'Safety Record' }
-  ];
-
-  const team = [
-    {
-      name: 'Sarah Johnson',
-      role: 'Founder & Lead Guide',
-      image: 'https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      description: 'With over 15 years of mountaineering experience, Sarah has led expeditions across 5 continents.'
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Senior Mountain Guide',
-      image: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      description: 'Certified mountain guide with expertise in high-altitude trekking and wilderness first aid.'
-    },
-    {
-      name: 'Emma Wilson',
-      role: 'Adventure Coordinator',
-      image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=1',
-      description: 'Passionate about sustainable tourism and creating unforgettable adventure experiences.'
-    }
-  ];
-
-  const values = [
-    {
-      icon: Shield,
-      title: 'Uncompromised Safety',
-      description: 'Your safety is our relentless focus. Satellite tracking, oxygen, and emergency telemetry on every trip.'
-    },
-    {
-      icon: Heart,
-      title: 'Passion for Adventure',
-      description: 'We live and breathe high-altitude wilderness, sharing secret spots and cultural immersion.'
-    },
-    {
-      icon: Globe,
-      title: 'Eco & Sustainable',
-      description: 'Zero-trace leave policy and direct economic support to local Sherpa communities.'
-    },
-    {
-      icon: Users,
-      title: 'Master Expedition Leaders',
-      description: 'Our lead guides possess certified UIAGM/IFMGA credentials and decades of summit success.'
-    }
-  ];
+export default function AboutPage() {
+  const { data } = useCMS();
+  const a = data.about;
+  const team = [...data.team].sort((x, y) => x.order - y.order);
 
   return (
-    <div className="min-h-screen bg-[#fcfcfd] text-slate-900 font-sans pt-20">
-      {/* Header Hero */}
-      <div className="relative py-24 bg-slate-900 text-white border-b border-gray-200">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-30 filter brightness-90"
-          style={{ backgroundImage: 'url(https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg)' }}
-        />
+    <>
+      <Head>
+        <title>{`About us · ${data.settings.siteName}`}</title>
+      </Head>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-xs font-bold uppercase tracking-widest mb-6">
-            <Sparkles className="w-4 h-4" />
-            <span>Pioneering Alpine Expeditions</span>
-          </div>
+      <PageHero eyebrow="Our story" title={a.heroTitle} subtitle={a.heroSubtitle} image={a.heroImage} />
 
-          <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight mb-6">
-            About <span className="text-emerald-400">Chal Oye</span>
-          </h1>
-          <p className="text-gray-300 text-lg sm:text-2xl max-w-3xl mx-auto leading-relaxed">
-            Crafting premium, safe, and life-defining wilderness adventures since 2011.
-          </p>
-        </div>
-      </div>
-
-      {/* Stats Ribbon */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-8 bg-white border border-gray-200 shadow-xl">
-          {stats.map((s, idx) => (
-            <div key={idx} className="text-center border-r border-gray-100 last:border-r-0">
-              <div className="text-3xl sm:text-4xl font-black text-slate-900 mb-1">{s.number}</div>
-              <div className="text-xs font-bold uppercase tracking-wider text-emerald-700">{s.label}</div>
+      {/* Stats */}
+      <section className="container-x relative z-10 -mt-12">
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-3xl bg-sand-200 shadow-xl ring-1 ring-pine-900/[0.04] shadow-soft lg:grid-cols-4">
+          {a.stats.map((s, i) => (
+            <div key={i} className="bg-white p-6 text-center sm:p-8">
+              <div className="font-display text-4xl font-bold text-pine-900 sm:text-5xl">{s.value}</div>
+              <div className="mt-1 text-sm text-pine-800/60">{s.label}</div>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Our Values Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="text-emerald-700 text-xs font-bold tracking-widest uppercase mb-3">Core Principles</div>
-          <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
-            What Drives Our <span className="text-emerald-600">Mission</span>
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {values.map((v, idx) => (
-            <div key={idx} className="bg-white p-8 border border-gray-200 hover:border-emerald-600 hover:shadow-lg transition-all duration-300">
-              <div className="p-4 bg-emerald-50 text-emerald-700 border border-emerald-200 w-fit mb-6">
-                <v.icon className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">{v.title}</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">{v.description}</p>
+      {/* Story */}
+      <section className="py-24 sm:py-32">
+        <div className="container-x grid items-center gap-16 lg:grid-cols-2">
+          <div>
+            <Reveal>
+              <SectionHeading eyebrow="How it began" title={a.storyTitle} />
+            </Reveal>
+            <div className="mt-8 space-y-5">
+              {a.storyParagraphs.map((p, i) => (
+                <Reveal key={i} delay={i * 80}>
+                  <p className="text-lg leading-relaxed text-pine-900/75">{p}</p>
+                </Reveal>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Team Section */}
-      <div className="py-24 bg-gray-50 border-t border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="text-emerald-700 text-xs font-bold tracking-widest uppercase mb-3">Leadership</div>
-            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
-              Meet Our Expedition <span className="text-emerald-600">Leaders</span>
-            </h2>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {team.map((t, idx) => (
-              <div key={idx} className="bg-white border border-gray-200 hover:border-emerald-600 hover:shadow-lg transition-all">
-                <div className="h-72 overflow-hidden relative bg-gray-100">
-                  <img src={t.image} alt={t.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold text-slate-900 mb-1">{t.name}</h3>
-                  <p className="text-emerald-700 text-xs font-bold uppercase tracking-wider mb-4">{t.role}</p>
-                  <p className="text-gray-600 text-sm leading-relaxed">{t.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <Reveal className="relative">
+            <div className="aspect-[4/5] overflow-hidden rounded-[2rem]">
+              <img src={a.storyImage} alt="" className="h-full w-full object-cover" loading="lazy" />
+            </div>
+            <div className="absolute -bottom-6 -left-4 rounded-3xl bg-ember-500 p-6 text-pine-950 shadow-xl sm:-left-8">
+              <div className="font-display text-5xl font-bold">{a.stats[0]?.value}</div>
+              <div className="text-sm font-semibold">{a.stats[0]?.label}</div>
+            </div>
+          </Reveal>
         </div>
-      </div>
+      </section>
 
-      {/* Certifications Section */}
-      <div className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-black text-slate-900 mb-12 uppercase tracking-wider">Global Certifications & Affiliations</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              'UIAGM / IFMGA Certified Guides',
-              'Wilderness Medical Society Partner',
-              'Leave No Trace Platinum Member',
-              'High-Altitude Rescue Alliance'
-            ].map((cert, index) => (
-              <div key={index} className="p-6 bg-gray-50 border border-gray-200 flex flex-col items-center">
-                <div className="p-3 bg-emerald-100 text-emerald-700 mb-3">
-                  <Award className="h-6 w-6" />
-                </div>
-                <p className="text-slate-900 text-sm font-bold">{cert}</p>
-              </div>
-            ))}
+      {/* Values */}
+      <section className="topo relative bg-pine-900 py-24 text-white sm:py-32">
+        <div className="container-x">
+          <Reveal>
+            <SectionHeading tone="light" eyebrow="What we stand for" title="Values we carry up every mountain" />
+          </Reveal>
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {a.values.map((v, i) => {
+              const Icon = getIcon(v.icon);
+              return (
+                <Reveal key={i} delay={i * 80} className="rounded-3xl bg-white/5 p-7 ring-1 ring-white/10 transition-colors hover:bg-white/10">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ember-500 text-pine-950">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-6 text-xl font-semibold">{v.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-white/65">{v.description}</p>
+                </Reveal>
+              );
+            })}
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+
+      {/* Team */}
+      {team.length > 0 && (
+        <section className="py-24 sm:py-32">
+          <div className="container-x">
+            <Reveal>
+              <SectionHeading align="center" eyebrow="The crew" title="People who'll walk beside you" />
+            </Reveal>
+            <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {team.map((m, i) => (
+                <Reveal key={m.id} delay={i * 80} className="group">
+                  <div className="aspect-[4/5] overflow-hidden rounded-[2rem] bg-pine-100">
+                    {m.photo ? (
+                      <img src={m.photo} alt={m.name} loading="lazy" className="h-full w-full object-cover grayscale transition-all duration-700 ease-out-expo group-hover:scale-105 group-hover:grayscale-0" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center"><Avatar name={m.name} className="h-28 w-28 text-3xl" /></div>
+                    )}
+                  </div>
+                  <h3 className="mt-6 text-2xl font-bold">{m.name}</h3>
+                  <div className="text-sm font-semibold text-ember-600">{m.role}</div>
+                  <p className="mt-3 text-sm leading-relaxed text-pine-800/65">{m.bio}</p>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="px-5 pb-24 sm:px-8 lg:px-12">
+        <Reveal className="mx-auto flex max-w-[1224px] flex-col items-start justify-between gap-8 rounded-[2.5rem] bg-sand-100 p-10 sm:p-14 lg:flex-row lg:items-center">
+          <h2 className="max-w-xl text-4xl font-bold leading-tight">Ready to walk with us?</h2>
+          <div className="flex flex-wrap gap-3">
+            <ButtonLink href="/trips">Explore treks <ArrowRight className="h-4 w-4" /></ButtonLink>
+            <ButtonLink href="/contact" variant="outline">Get in touch</ButtonLink>
+          </div>
+        </Reveal>
+      </section>
+    </>
   );
-};
-
-export default About;
+}

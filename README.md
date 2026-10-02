@@ -1,41 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Chal Oye (chaloye.in)
 
-## Getting Started
+Guided Himalayan treks website with a built-in content studio (admin CMS). Next.js 16 (pages router), React 19, Tailwind CSS v4.
 
-First, run the development server:
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Public site: `/`, `/trips`, `/trips/[slug]`, `/about`, `/contact`, `/login`, `/account`
+- Admin: `/admin`. Demo login: `admin@chaloye.in` / `chaloye123`
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## How content works
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+All content (treks, bookings, inquiries, testimonials, team, FAQs, homepage, about page, settings) goes through one layer:
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+| File | Role |
+| --- | --- |
+| `lib/cms/types.ts` | Content model. Each collection maps to a future database table. |
+| `lib/cms/seed.ts` | Demo data. "Reset demo data" in Admin → Settings restores it. |
+| `lib/cms/adapter.ts` | `CMSAdapter` interface plus the current `localStorage` implementation. |
+| `context/CMSContext.tsx` | React provider used by both the site and the admin. |
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Right now edits are saved in the **browser's localStorage**, so they only exist in that browser. Use Admin → Settings → Export/Import JSON to move content between browsers.
 
-## Learn More
+## Moving to Supabase
 
-To learn more about Next.js, take a look at the following resources:
+1. Create tables matching `lib/cms/types.ts`: `treks`, `bookings`, `inquiries`, `testimonials`, `team`, `faqs` (uuid `id`, `created_at`, `updated_at`), plus a `site_content` table with one JSON row each for `home`, `about` and `settings`.
+2. Write `supabaseAdapter` implementing `CMSAdapter` and return it from `getAdapter()` in `lib/cms/adapter.ts`. No UI changes are needed.
+3. Replace the demo admin gate in `lib/adminAuth.ts` with Supabase Auth, and protect writes with row-level security (public read for published content; admin-only writes; public insert-only for `bookings` and `inquiries`).
+4. Swap the mock customer auth in `context/AuthContext.tsx` for `supabase.auth`.
+5. Move image uploads in `components/admin/fields.tsx` (`ImageField`) to Supabase Storage.
+6. Optionally fetch published content in `getStaticProps` with ISR for SEO, instead of loading it on the client.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
-# chaloye
+> The current admin login is **not secure**. The credentials ship in the JS bundle. Don't deploy the admin publicly until step 3 is done.

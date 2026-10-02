@@ -1,65 +1,151 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f5f5f7;
-  --foreground: #09090b;
-  --accent-emerald: #047857;
-  --accent-amber: #d97706;
+/* ---------- Brand tokens (from the chaloye.in logo) ---------- */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --color-pine-50: #f1f6f2;
+  --color-pine-100: #dde9e0;
+  --color-pine-200: #bcd3c3;
+  --color-pine-300: #91b59d;
+  --color-pine-400: #64917a;
+  --color-pine-500: #45745b;
+  --color-pine-600: #335c47;
+  --color-pine-700: #294a3a;
+  --color-pine-800: #213c2f;
+  --color-pine-900: #1b3127;
+  --color-pine-950: #0e1c15;
+
+  --color-ember-50: #fef6ee;
+  --color-ember-100: #fde9d6;
+  --color-ember-200: #fad0ac;
+  --color-ember-300: #f6ae77;
+  --color-ember-400: #f0914a;
+  --color-ember-500: #e8892f;
+  --color-ember-600: #cf6b17;
+  --color-ember-700: #ab5215;
+  --color-ember-800: #884118;
+  --color-ember-900: #6f3717;
+
+  --color-sand-50: #fbf8f2;
+  --color-sand-100: #f6f1e8;
+  --color-sand-200: #ece3d3;
+  --color-sand-300: #ddcfb6;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-fade-up: fade-up 0.8s var(--ease-out-expo) both;
+  --animate-ken-burns: ken-burns 24s ease-out both;
+  --animate-pop-in: pop-in 0.25s var(--ease-out-expo) both;
+  --animate-slide-in-right: slide-in-right 0.35s var(--ease-out-expo) both;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes ken-burns {
+    from { transform: scale(1.12); }
+    to { transform: scale(1); }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes slide-in-right {
+    from { transform: translateX(100%); }
+    to { transform: none; }
+  }
 }
 
-/* Enforce sharp 0px border-radius everywhere */
-*, *::before, *::after {
-  border-radius: 0px !important;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply text-pine-950 font-sans antialiased;
+    /* Warm paper tone with faint brand-coloured glows instead of flat white */
+    background:
+      radial-gradient(1100px 700px at 100% -10%, rgb(232 137 47 / 0.07), transparent 60%),
+      radial-gradient(900px 700px at -10% 40%, rgb(69 116 91 / 0.07), transparent 60%),
+      #faf6ef;
+    background-attachment: fixed;
+    overflow-x: hidden;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    @apply bg-ember-500 text-white;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+    letter-spacing: -0.025em;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ember-500;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
-body {
-  background-color: #f5f5f7;
-  color: #09090b;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  overflow-x: hidden;
-  letter-spacing: -0.01em;
-  selection-background-color: #047857;
-  selection-color: #ffffff;
+@utility container-x {
+  @apply mx-auto w-full max-w-[1320px] px-5 sm:px-8 lg:px-12;
 }
 
-/* Swiss Alpine Editorial Grid Lines & Borders */
-.swiss-border {
-  border: 1px solid #e4e4e7;
+/* Soft, layered shadow for light cards so they lift gently off the cream background */
+@utility shadow-soft {
+  box-shadow: 0 1px 2px rgb(14 28 21 / 0.04), 0 10px 30px -12px rgb(14 28 21 / 0.14);
 }
 
-.swiss-border-b {
-  border-bottom: 1px solid #e4e4e7;
+@utility eyebrow {
+  @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-ember-600;
 }
 
-.swiss-border-t {
-  border-top: 1px solid #e4e4e7;
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 }
 
-.swiss-card {
-  background: #ffffff;
-  border: 1px solid #e4e4e7;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+/* Scroll-reveal (toggled by components/site/Reveal) */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s var(--ease-out-expo), transform 0.9s var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
 }
 
-.swiss-card:hover {
-  border-color: #09090b;
-  box-shadow: 0 12px 30px -10px rgba(9, 9, 11, 0.08);
+/* Subtle film grain over dark hero imagery */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Crisp Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #f5f5f7;
-}
-::-webkit-scrollbar-thumb {
-  background: #a1a1aa;
-  border-radius: 0px !important;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #047857;
+/* Topographic contour pattern used on brand surfaces */
+.topo {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.06' stroke-width='1.2'%3E%3Cpath d='M-50 420c80-60 160-90 240-60s150 80 240 40 170-100 220-80'/%3E%3Cpath d='M-50 380c80-60 170-100 250-70s140 70 230 30 170-110 230-90'/%3E%3Cpath d='M-50 340c90-70 180-110 260-80s130 60 220 20 170-120 240-100'/%3E%3Cpath d='M-50 300c90-70 190-120 270-90s120 50 210 10 170-130 250-110'/%3E%3Cpath d='M-50 260c100-80 200-130 280-100s110 40 200 0 170-140 260-120'/%3E%3Cpath d='M-50 220c100-80 210-140 290-110s100 30 190-10 170-150 270-130'/%3E%3Cpath d='M-50 180c110-90 220-150 300-120s90 20 180-20 170-160 280-140'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 600px 600px;
 }
 
-
-
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
