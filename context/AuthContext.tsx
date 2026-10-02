@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import type { User as AuthUser } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
-// Mock customer auth. Swap these functions for supabase.auth.* when the backend is connected.
+// Customer accounts: Supabase Auth for sessions, `profiles` for name and phone.
 
 export interface User {
   id: string;
@@ -19,85 +21,112 @@ interface SignupInput {
   phone?: string;
 }
 
+type Result = { ok: true } | { ok: false; error: string };
+type SignupResult = Result & { needsConfirmation?: boolean };
+
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (input: SignupInput) => Promise<boolean>;
-  logout: () => void;
-  resetPassword: (email: string) => Promise<boolean>;
-  updateProfile: (patch: Partial<User>) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<Result>;
+  /** Redirects to Google; on return the visitor lands on `next` signed in. */
+  signInWithGoogle: (next?: string) => Promise<Result>;
+  signup: (input: SignupInput) => Promise<SignupResult>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<Result>;
+  updatePassword: (password: string) => Promise<Result>;
+  updateProfile: (patch: Partial<Pick<User, 'firstName' | 'lastName' | 'phone'>>) => Promise<Result>;
 }
 
-const USER_KEY = 'chaloye-user';
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+async function loadUser(authUser: AuthUser): Promise<User> {
+  const { data } = await supabase.from('profiles').select('first_name, last_name, phone').eq('id', authUser.id).maybeSingle();
+  const meta = authUser.user_metadata ?? {};
+  return {
+    id: authUser.id,
+    email: authUser.email ?? '',
+    firstName: data?.first_name || meta.first_name || (authUser.email ?? '').split('@')[0],
+    lastName: data?.last_name || meta.last_name || '',
+    phone: data?.phone ?? meta.phone ?? undefined,
+    joinDate: authUser.created_at.slice(0, 10),
+  };
+}
+
+const fail = (error: { message: string } | null): Result => (error ? { ok: false, error: error.message } : { ok: true });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(USER_KEY);
-      if (saved) setUser(JSON.parse(saved));
-    } catch {}
-    setIsLoading(false);
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Deferred: Supabase must not be called from inside this callback.
+      setTimeout(async () => {
+        setUser(session?.user ? await loadUser(session.user) : null);
+        setIsLoading(false);
+      }, 0);
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
-  const persist = (u: User | null) => {
-    setUser(u);
-    try {
-      if (u) localStorage.setItem(USER_KEY, JSON.stringify(u));
-      else localStorage.removeItem(USER_KEY);
-    } catch {}
-  };
+  const login = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    return fail(error);
+  }, []);
 
-  const login = async (email: string, password: string) => {
-    await wait(600);
-    if (!email || !password) return false;
-    const name = email.split('@')[0].replace(/[._-]+/g, ' ');
-    const [first = 'Trekker', ...rest] = name.split(' ');
-    persist({
-      id: email,
-      email,
-      firstName: first.charAt(0).toUpperCase() + first.slice(1),
-      lastName: rest.join(' '),
-      joinDate: new Date().toISOString().slice(0, 10),
+  const signInWithGoogle = useCallback(async (next = '/account') => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}${next.startsWith('/') ? next : '/account'}` },
     });
-    return true;
-  };
+    return fail(error);
+  }, []);
 
-  const signup = async (input: SignupInput) => {
-    await wait(600);
-    persist({
-      id: input.email,
-      email: input.email,
-      firstName: input.firstName,
-      lastName: input.lastName,
-      phone: input.phone,
-      joinDate: new Date().toISOString().slice(0, 10),
+  const signup = useCallback(async (input: SignupInput): Promise<SignupResult> => {
+    const { data, error } = await supabase.auth.signUp({
+      email: input.email.trim(),
+      password: input.password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/account`,
+        data: { first_name: input.firstName.trim(), last_name: input.lastName.trim(), phone: input.phone?.trim() || null },
+      },
     });
-    return true;
-  };
+    if (error) return { ok: false, error: error.message };
+    // With email confirmation on, there's no session until the link is clicked.
+    return { ok: true, needsConfirmation: !data.session };
+  }, []);
 
-  const logout = () => persist(null);
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, []);
 
-  const resetPassword = async () => {
-    await wait(600);
-    return true;
-  };
+  const resetPassword = useCallback(async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return fail(error);
+  }, []);
 
-  const updateProfile = async (patch: Partial<User>) => {
-    if (!user) return false;
-    await wait(400);
-    persist({ ...user, ...patch });
-    return true;
-  };
+  const updatePassword = useCallback(async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    return fail(error);
+  }, []);
+
+  const updateProfile = useCallback<AuthContextType['updateProfile']>(
+    async (patch) => {
+      if (!user) return { ok: false, error: 'You are signed out.' };
+      const { error } = await supabase
+        .from('profiles')
+        .update({ first_name: patch.firstName, last_name: patch.lastName, phone: patch.phone || null })
+        .eq('id', user.id);
+      if (!error) setUser({ ...user, ...patch });
+      return fail(error);
+    },
+    [user]
+  );
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout, resetPassword, updateProfile }}>
+    <AuthContext.Provider value={{ user, isLoading, login, signInWithGoogle, signup, logout, resetPassword, updatePassword, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

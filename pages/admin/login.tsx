@@ -5,24 +5,31 @@ import { useRouter } from 'next/router';
 import { ArrowLeft, Lock } from 'lucide-react';
 import Logo from '@/components/site/Logo';
 import { Btn, Field, Input } from '@/components/admin/ui';
-import { adminSignIn, DEMO_ADMIN, isAdminSignedIn } from '@/lib/adminAuth';
+import { adminSignIn, getAdmin } from '@/lib/adminAuth';
 
 export default function AdminLogin() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const next = (router.query.next as string) || '/admin';
+  const queryNext = (router.query.next as string) || '/admin';
+  const next = queryNext.startsWith('/admin') ? queryNext : '/admin';
 
   useEffect(() => {
-    if (router.isReady && isAdminSignedIn()) router.replace(next);
+    if (!router.isReady) return;
+    getAdmin().then((a) => a && router.replace(next));
   }, [router, next]);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminSignIn(email, password)) router.push(next.startsWith('/admin') ? next : '/admin');
-    else setError('Incorrect email or password.');
+    setError('');
+    setLoading(true);
+    const err = await adminSignIn(email, password);
+    setLoading(false);
+    if (err) setError(err);
+    else router.push(next);
   };
 
   return (
@@ -51,13 +58,7 @@ export default function AdminLogin() {
               <Input type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
             {error && <p className="text-sm font-medium text-rose-600">{error}</p>}
-            <Btn className="w-full py-3">Sign in</Btn>
-            <div className="rounded-lg bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 ring-1 ring-amber-200">
-              <strong>Demo login</strong>: {DEMO_ADMIN.email} / {DEMO_ADMIN.password}
-              <button type="button" onClick={() => { setEmail(DEMO_ADMIN.email); setPassword(DEMO_ADMIN.password); }} className="ml-1 font-semibold underline">
-                Fill in
-              </button>
-            </div>
+            <Btn className="w-full py-3" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'}</Btn>
           </form>
           <Link href="/" className="mt-6 flex items-center justify-center gap-1.5 text-sm text-white/60 hover:text-white">
             <ArrowLeft className="h-4 w-4" /> Back to website

@@ -5,11 +5,13 @@ import { useRouter } from 'next/router';
 import {
   CalendarCheck,
   ExternalLink,
+  FileText,
   HelpCircle,
   Home,
   Info,
   LayoutDashboard,
   LogOut,
+  Mail,
   Map,
   Menu,
   MessageSquareQuote,
@@ -20,7 +22,7 @@ import {
 } from 'lucide-react';
 import { LogoMark } from '@/components/site/Logo';
 import { useCMS } from '@/context/CMSContext';
-import { adminSignOut, DEMO_ADMIN, isAdminSignedIn } from '@/lib/adminAuth';
+import { adminSignOut, getAdmin, type AdminUser } from '@/lib/adminAuth';
 import { cn } from '@/lib/format';
 import { ConfirmProvider } from './ui';
 
@@ -29,14 +31,22 @@ type NavItem = { href: string; label: string; icon: React.ElementType; badge?: n
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { data } = useCMS();
-  const [authed, setAuthed] = useState<boolean | null>(null);
+  const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [drawer, setDrawer] = useState(false);
 
   useEffect(() => {
-    const ok = isAdminSignedIn();
-    setAuthed(ok);
-    if (!ok) router.replace(`/admin/login?next=${encodeURIComponent(router.asPath)}`);
-  }, [router]);
+    let live = true;
+    getAdmin().then((a) => {
+      if (!live) return;
+      setAdmin(a);
+      if (!a) router.replace(`/admin/login?next=${encodeURIComponent(router.asPath)}`);
+    });
+    return () => {
+      live = false;
+    };
+    // Only re-check when the admin area is entered, not on every in-admin navigation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => setDrawer(false), [router.asPath]);
 
@@ -50,6 +60,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { href: '/admin/bookings', label: 'Bookings', icon: CalendarCheck, badge: pendingBookings },
         { href: '/admin/inquiries', label: 'Inquiries', icon: Inbox, badge: newInquiries },
+        { href: '/admin/subscribers', label: 'Subscribers', icon: Mail },
       ],
     },
     {
@@ -58,6 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: '/admin/treks', label: 'Treks', icon: Map },
         { href: '/admin/homepage', label: 'Homepage', icon: Home },
         { href: '/admin/about', label: 'About page', icon: Info },
+        { href: '/admin/pages', label: 'Other pages', icon: FileText },
         { href: '/admin/testimonials', label: 'Testimonials', icon: MessageSquareQuote },
         { href: '/admin/team', label: 'Team', icon: Users },
         { href: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
@@ -68,7 +80,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const isActive = (href: string) => (href === '/admin' ? router.pathname === '/admin' : router.pathname.startsWith(href));
 
-  if (!authed) {
+  if (!admin) {
     return <div className="min-h-screen bg-sand-50" />;
   }
 
@@ -112,12 +124,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex items-center gap-3 rounded-lg px-3 py-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ember-500 text-xs font-bold text-pine-950">CO</span>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium text-white">{DEMO_ADMIN.name}</div>
-            <div className="truncate text-xs text-white/50">{DEMO_ADMIN.email}</div>
+            <div className="truncate text-sm font-medium text-white">Admin</div>
+            <div className="truncate text-xs text-white/50">{admin.email}</div>
           </div>
           <button
-            onClick={() => {
-              adminSignOut();
+            onClick={async () => {
+              await adminSignOut();
               router.push('/admin/login');
             }}
             aria-label="Sign out"
@@ -156,10 +168,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <button onClick={() => setDrawer(true)} aria-label="Open menu" className="rounded-lg p-2 text-pine-900 hover:bg-pine-900/5 lg:hidden">
               <Menu className="h-5 w-5" />
             </button>
-            <div className="hidden items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200 sm:flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-              Demo mode · changes are saved in this browser only
-            </div>
             <Link href="/" target="_blank" className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-pine-900 ring-1 ring-pine-900/10 hover:bg-white">
               View site <ExternalLink className="h-3.5 w-3.5" />
             </Link>

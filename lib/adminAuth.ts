@@ -1,28 +1,33 @@
-// Demo-only admin gate. This is NOT security: anyone can read these credentials in the bundle.
-// Replace with Supabase Auth + a row-level-security "admins" check before going live.
+import { supabase } from './supabase';
 
-export const DEMO_ADMIN = {
-  email: 'admin@chaloye.in',
-  password: 'chaloye123',
-  name: 'Chal Oye Admin',
-};
+// Admins are ordinary Supabase Auth users listed in the `admins` table.
+// The real protection is RLS (public.is_admin()); these helpers only drive the UI.
 
-const KEY = 'chaloye-admin-session';
-
-export function adminSignIn(email: string, password: string) {
-  const ok = email.trim().toLowerCase() === DEMO_ADMIN.email && password === DEMO_ADMIN.password;
-  if (ok) localStorage.setItem(KEY, JSON.stringify({ email: DEMO_ADMIN.email, at: Date.now() }));
-  return ok;
+export interface AdminUser {
+  email: string;
 }
 
-export function adminSignOut() {
-  localStorage.removeItem(KEY);
+async function isAdmin() {
+  const { data, error } = await supabase.rpc('is_admin');
+  return !error && data === true;
 }
 
-export function isAdminSignedIn() {
-  try {
-    return !!localStorage.getItem(KEY);
-  } catch {
-    return false;
-  }
+/** Returns an error message, or null on success. */
+export async function adminSignIn(email: string, password: string): Promise<string | null> {
+  const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+  if (error) return error.message;
+  if (await isAdmin()) return null;
+  await supabase.auth.signOut();
+  return 'This account does not have admin access.';
+}
+
+export async function adminSignOut() {
+  await supabase.auth.signOut();
+}
+
+export async function getAdmin(): Promise<AdminUser | null> {
+  const { data } = await supabase.auth.getSession();
+  const user = data.session?.user;
+  if (!user || !(await isAdmin())) return null;
+  return { email: user.email ?? '' };
 }

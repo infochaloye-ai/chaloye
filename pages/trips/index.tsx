@@ -2,11 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { Compass, Search, SlidersHorizontal, X } from 'lucide-react';
-import { usePublishedTreks, useSettings } from '@/context/CMSContext';
+import { useCMS, usePublishedTreks, useSettings } from '@/context/CMSContext';
 import TrekCard from '@/components/site/TrekCard';
 import Reveal from '@/components/site/Reveal';
-import { Button } from '@/components/site/ui';
-import { IMAGES } from '@/lib/cms/seed';
+import { Button, Highlighted } from '@/components/site/ui';
 import { cn } from '@/lib/format';
 import type { Difficulty } from '@/lib/cms/types';
 
@@ -30,6 +29,7 @@ export default function TreksPage() {
   const router = useRouter();
   const treks = usePublishedTreks();
   const settings = useSettings();
+  const page = useCMS().data.pages.trips;
   const [f, setF] = useState<Filters>(EMPTY);
 
   // Hydrate filters from the URL once the router is ready (supports links like /trips?difficulty=Easy).
@@ -94,14 +94,14 @@ export default function TreksPage() {
       </Head>
 
       <section className="grain relative overflow-hidden bg-pine-950 pb-20 pt-40 text-white sm:pb-24 sm:pt-48">
-        <img src={IMAGES.snowMoon} alt="" className="absolute inset-0 h-full w-full animate-ken-burns object-cover opacity-50" />
+        <img src={page.image} alt="" className="absolute inset-0 h-full w-full animate-ken-burns object-cover opacity-50" />
         <div className="absolute inset-0 bg-gradient-to-t from-pine-950 via-pine-950/60 to-pine-950/30" />
         <div className="container-x relative">
           <div className="eyebrow mb-5 text-ember-300 animate-fade-up">
-            <Compass className="h-4 w-4" /> {treks.length} handpicked trails
+            <Compass className="h-4 w-4" /> {treks.length} {page.eyebrow}
           </div>
           <h1 className="max-w-3xl animate-fade-up font-display text-5xl font-bold leading-[1] [animation-delay:100ms] sm:text-7xl">
-            Find the trek that's <span className="text-ember-400">calling you.</span>
+            <Highlighted title={page.title} highlight={page.highlight} className="text-ember-400" />
           </h1>
           <div className="mt-10 flex max-w-2xl animate-fade-up items-center gap-3 rounded-full bg-white p-2 pl-6 text-pine-950 shadow-2xl [animation-delay:200ms]">
             <Search className="h-5 w-5 shrink-0 text-pine-800/40" />

@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { Calendar, LogOut, Mountain, Users } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useCMS } from '@/context/CMSContext';
+import { supabase } from '@/lib/supabase';
 import { ButtonLink } from '@/components/site/ui';
 import { authInput } from '@/components/site/AuthShell';
 import { cn, formatDate, formatPrice, initials, todayISO } from '@/lib/format';
@@ -19,10 +20,11 @@ const STATUS: Record<BookingStatus, string> = {
 
 export default function AccountPage() {
   const { user, isLoading, logout, updateProfile } = useAuth();
-  const { data, update } = useCMS();
+  const { data, refresh } = useCMS();
   const router = useRouter();
   const [profile, setProfile] = useState({ firstName: '', lastName: '', phone: '' });
   const [saved, setSaved] = useState(false);
+  const [profileError, setProfileError] = useState('');
 
   useEffect(() => {
     if (!isLoading && !user) router.replace('/login?next=/account');
@@ -31,6 +33,13 @@ export default function AccountPage() {
   useEffect(() => {
     if (user) setProfile({ firstName: user.firstName, lastName: user.lastName, phone: user.phone ?? '' });
   }, [user]);
+
+  const cancel = async (id: string) => {
+    if (!confirm('Cancel this booking?')) return;
+    const { error } = await supabase.rpc('cancel_booking', { booking_id: id });
+    if (error) alert(error.message);
+    await refresh();
+  };
 
   const bookings = useMemo(
     () => (user ? data.bookings.filter((b) => b.email.toLowerCase() === user.email.toLowerCase()) : []),
@@ -58,7 +67,7 @@ export default function AccountPage() {
               <p className="text-pine-800/60">{user.email}</p>
             </div>
           </div>
-          <button onClick={() => { logout(); router.push('/'); }} className="inline-flex items-center gap-2 self-start rounded-full px-4 py-2 text-sm font-semibold text-pine-800/70 ring-1 ring-pine-900/10 hover:bg-white sm:self-auto">
+          <button onClick={async () => { await logout(); router.push('/'); }} className="inline-flex items-center gap-2 self-start rounded-full px-4 py-2 text-sm font-semibold text-pine-800/70 ring-1 ring-pine-900/10 hover:bg-white sm:self-auto">
             <LogOut className="h-4 w-4" /> Sign out
           </button>
         </div>
@@ -98,9 +107,7 @@ export default function AccountPage() {
                       </div>
                       {canCancel && (
                         <button
-                          onClick={() => {
-                            if (confirm('Cancel this booking?')) update('bookings', b.id, { status: 'cancelled' });
-                          }}
+                          onClick={() => cancel(b.id)}
                           className="self-start rounded-full px-4 py-2 text-sm font-semibold text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50 sm:self-center"
                         >
                           Cancel
@@ -118,7 +125,9 @@ export default function AccountPage() {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                await updateProfile(profile);
+                const res = await updateProfile(profile);
+                setProfileError(res.ok ? '' : res.error);
+                if (!res.ok) return;
                 setSaved(true);
                 setTimeout(() => setSaved(false), 2000);
               }}
@@ -127,6 +136,7 @@ export default function AccountPage() {
               <input className={authInput} placeholder="First name" value={profile.firstName} onChange={(e) => setProfile({ ...profile, firstName: e.target.value })} />
               <input className={authInput} placeholder="Last name" value={profile.lastName} onChange={(e) => setProfile({ ...profile, lastName: e.target.value })} />
               <input className={authInput} placeholder="Phone" value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} />
+              {profileError && <p className="text-sm font-medium text-rose-600">{profileError}</p>}
               <button className="w-full rounded-full bg-pine-900 py-3.5 font-semibold text-white hover:bg-pine-800">{saved ? 'Saved ✓' : 'Save changes'}</button>
             </form>
           </div>

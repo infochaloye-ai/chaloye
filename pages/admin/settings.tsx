@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Download, RotateCcw, Upload } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import { useCMS } from '@/context/CMSContext';
 import { Btn, Card, Field, Input, PageHeader, Select, Textarea, Toggle, useConfirm } from '@/components/admin/ui';
 import { FormGrid, SaveBar, useSingletonDraft } from '@/components/admin/useSingletonDraft';
@@ -9,7 +9,7 @@ import { todayISO } from '@/lib/format';
 import type { CMSSnapshot, SiteSettings } from '@/lib/cms/types';
 
 export default function SettingsAdmin() {
-  const { data, replaceAll, reset } = useCMS();
+  const { data, replaceAll } = useCMS();
   const { draft, setDraft, dirty, saving, save, discard } = useSingletonDraft('settings');
   const toast = useToast();
   const confirm = useConfirm();
@@ -35,12 +35,6 @@ export default function SettingsAdmin() {
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Invalid file', 'error');
     }
-  };
-
-  const resetAll = async () => {
-    if (!(await confirm({ title: 'Reset to demo content?', message: 'All treks, bookings, inquiries and page edits will be replaced with the original demo data. This cannot be undone.', confirmLabel: 'Reset everything', danger: true }))) return;
-    await reset();
-    toast('Demo content restored');
   };
 
   return (
@@ -73,6 +67,13 @@ export default function SettingsAdmin() {
           </div>
         </Card>
 
+        <Card title="Newsletter" description="The sign-up band at the top of the footer. Sign-ups appear under Subscribers.">
+          <FormGrid>
+            <Field label="Title"><Input value={draft.newsletter.title} onChange={(e) => set({ newsletter: { ...draft.newsletter, title: e.target.value } })} /></Field>
+            <Field label="Subtitle"><Input value={draft.newsletter.subtitle} onChange={(e) => set({ newsletter: { ...draft.newsletter, subtitle: e.target.value } })} /></Field>
+          </FormGrid>
+        </Card>
+
         <Card title="Contact details">
           <FormGrid>
             <Field label="Email"><Input type="email" value={draft.email} onChange={(e) => set({ email: e.target.value })} /></Field>
@@ -93,12 +94,11 @@ export default function SettingsAdmin() {
           </FormGrid>
         </Card>
 
-        <Card title="Data" description="Content is stored in this browser until the database is connected. Use export/import to move it between browsers.">
+        <Card title="Backup" description="Download all content as a JSON backup, or restore one. Restoring replaces everything in the database.">
           <div className="flex flex-wrap gap-2">
             <Btn variant="secondary" onClick={exportJson}><Download className="h-4 w-4" /> Export JSON</Btn>
             <Btn variant="secondary" onClick={() => fileRef.current?.click()}><Upload className="h-4 w-4" /> Import JSON</Btn>
             <input ref={fileRef} type="file" accept="application/json" className="sr-only" onChange={importJson} />
-            <Btn variant="ghost" className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 sm:ml-auto" onClick={resetAll}><RotateCcw className="h-4 w-4" /> Reset demo data</Btn>
           </div>
         </Card>
       </div>

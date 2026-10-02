@@ -5,7 +5,7 @@ import { useCMS, usePublishedTreks } from '@/context/CMSContext';
 import PageHero from '@/components/site/PageHero';
 import Reveal from '@/components/site/Reveal';
 import FaqList from '@/components/site/Faq';
-import { IMAGES } from '@/lib/cms/seed';
+import { Highlighted } from '@/components/site/ui';
 
 const field =
   'w-full rounded-2xl bg-sand-50 px-5 py-4 text-pine-950 ring-1 ring-pine-900/10 outline-none transition placeholder:text-pine-800/40 focus:bg-white focus:ring-2 focus:ring-ember-500';
@@ -14,6 +14,7 @@ export default function ContactPage() {
   const { data, create } = useCMS();
   const treks = usePublishedTreks();
   const s = data.settings;
+  const page = data.pages.contact;
   const faqs = data.faqs.filter((f) => f.published).sort((a, b) => a.order - b.order).slice(0, 4);
 
   const [form, setForm] = useState({ name: '', email: '', phone: '', trekInterest: '', subject: '', message: '' });
@@ -50,7 +51,7 @@ export default function ContactPage() {
         <title>{`Contact · ${s.siteName}`}</title>
       </Head>
 
-      <PageHero eyebrow="Get in touch" title={<>Let's plan your <span className="text-ember-400">next climb.</span></>} subtitle="Questions about fitness, gear or which trek suits you? Our trek experts usually reply within the hour." image={IMAGES.tentSunset} />
+      <PageHero eyebrow={page.eyebrow} title={<Highlighted title={page.title} highlight={page.highlight} className="text-ember-400" />} subtitle={page.subtitle} image={page.image} />
 
       <section className="container-x relative z-10 -mt-12 grid gap-4 sm:grid-cols-3">
         {channels.map((c) => (
@@ -80,8 +81,8 @@ export default function ContactPage() {
               </div>
             ) : (
               <form onSubmit={submit} className="space-y-4">
-                <h2 className="text-3xl font-bold">Send us a message</h2>
-                <p className="pb-2 text-pine-800/60">Fill in the form and we'll be in touch.</p>
+                <h2 className="text-3xl font-bold">{page.formTitle}</h2>
+                <p className="pb-2 text-pine-800/60">{page.formSubtitle}</p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <input required className={field} placeholder="Your name" autoComplete="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                   <input required type="email" className={field} placeholder="Email address" autoComplete="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />

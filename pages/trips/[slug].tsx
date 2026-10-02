@@ -71,7 +71,7 @@ export default function TrekDetailPage() {
   );
 
   if (!trek) {
-    // Wait for stored CMS content before deciding the trek doesn't exist.
+    // A draft trek only appears once an admin's session has re-read content.
     if (!router.isReady || !ready) return <div className="min-h-screen bg-pine-950" />;
     return (
       <section className="flex min-h-[80vh] flex-col items-center justify-center px-4 pt-24 text-center">

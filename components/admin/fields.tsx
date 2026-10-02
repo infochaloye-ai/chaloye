@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, ImageOff, Plus, Trash2, Upload } from 'lucide-react
 import { Btn, IconBtn, inputCls } from './ui';
 import { useToast } from './Toast';
 import { cn } from '@/lib/format';
+import { supabase } from '@/lib/supabase';
 
 export function FieldLabel({ label, hint, required }: { label: string; hint?: string; required?: boolean }) {
   return (
@@ -16,17 +17,15 @@ export function FieldLabel({ label, hint, required }: { label: string; hint?: st
   );
 }
 
-// Small local images become data URLs so the mock CMS works offline.
-// With Supabase this becomes an upload to Storage that returns a public URL.
-const MAX_UPLOAD_KB = 400;
+// Uploads go to the public `media` bucket in Supabase Storage (admins only, see RLS).
+const MAX_UPLOAD_MB = 5;
 
-function readAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result as string);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
+async function uploadImage(file: File) {
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const path = `${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from('media').upload(path, file, { contentType: file.type, cacheControl: '31536000' });
+  if (error) throw new Error(error.message);
+  return supabase.storage.from('media').getPublicUrl(path).data.publicUrl;
 }
 
 export function ImageField({
@@ -46,22 +45,30 @@ export function ImageField({
 }) {
   const toast = useToast();
   const [broken, setBroken] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (file.size > MAX_UPLOAD_KB * 1024) {
-      toast(`Image is over ${MAX_UPLOAD_KB} KB. Paste a URL instead, or compress it first.`, 'error');
+    if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+      toast(`Image is over ${MAX_UPLOAD_MB} MB. Compress it first, or paste a URL.`, 'error');
       return;
     }
     setBroken(false);
-    onChange(await readAsDataUrl(file));
+    setUploading(true);
+    try {
+      onChange(await uploadImage(file));
+    } catch (err) {
+      toast(err instanceof Error ? `Upload failed: ${err.message}` : 'Upload failed', 'error');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
     <div>
-      <FieldLabel label={label} hint={hint ?? 'Paste an image URL or upload a small file.'} required={required} />
+      <FieldLabel label={label} hint={hint ?? 'Paste an image URL or upload a file.'} required={required} />
       <div className="flex gap-3">
         <div className={cn('relative w-28 shrink-0 overflow-hidden rounded-lg bg-sand-100 ring-1 ring-pine-900/10', aspect)}>
           {value && !broken ? (
@@ -76,17 +83,16 @@ export function ImageField({
           <input
             className={inputCls}
             placeholder="https://…"
-            value={value.startsWith('data:') ? '(uploaded file)' : value}
+            value={value}
             onChange={(e) => {
               setBroken(false);
               onChange(e.target.value);
             }}
-            onFocus={(e) => value.startsWith('data:') && e.target.select()}
           />
           <div className="flex gap-2">
             <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-pine-900 ring-1 ring-pine-900/10 hover:bg-sand-50">
-              <Upload className="h-3.5 w-3.5" /> Upload
-              <input type="file" accept="image/*" className="sr-only" onChange={onFile} />
+              <Upload className="h-3.5 w-3.5" /> {uploading ? 'Uploading…' : 'Upload'}
+              <input type="file" accept="image/*" className="sr-only" onChange={onFile} disabled={uploading} />
             </label>
             {value && (
               <button type="button" onClick={() => onChange('')} className="text-xs font-medium text-pine-800/50 hover:text-rose-600">
