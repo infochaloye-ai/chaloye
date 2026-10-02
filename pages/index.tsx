@@ -7,23 +7,22 @@ import { useCMS, usePublishedTreks } from '@/context/CMSContext';
 import TrekCard from '@/components/site/TrekCard';
 import Reveal from '@/components/site/Reveal';
 import FaqList from '@/components/site/Faq';
-import { Avatar, ButtonLink, SectionHeading, Stars } from '@/components/site/ui';
+import { Avatar, ButtonLink, Highlighted, SectionHeading, Stars } from '@/components/site/ui';
 import { getIcon } from '@/lib/icons';
 import { formatDate, formatPrice, todayISO } from '@/lib/format';
-import type { Difficulty } from '@/lib/cms/types';
+import type { Difficulty, SectionCopy } from '@/lib/cms/types';
 
-const DIFFICULTIES: { level: Difficulty; blurb: string }[] = [
-  { level: 'Easy', blurb: 'Gentle trails and comfortable camps. Perfect for your first Himalayan trek.' },
-  { level: 'Moderate', blurb: 'Longer days and a summit push. Needs a few weeks of training.' },
-  { level: 'Challenging', blurb: 'High passes and big altitude gains for trekkers with some experience.' },
-  { level: 'Expert', blurb: 'Remote, demanding expeditions for seasoned high-altitude trekkers.' },
-];
+const LEVELS: Difficulty[] = ['Easy', 'Moderate', 'Challenging', 'Expert'];
+
+function Heading({ copy, align }: { copy: SectionCopy; align?: 'left' | 'center' }) {
+  return <SectionHeading align={align} eyebrow={copy.eyebrow} title={<Highlighted title={copy.title} highlight={copy.highlight} />} subtitle={copy.subtitle} />;
+}
 
 export default function HomePage() {
   const { data } = useCMS();
   const treks = usePublishedTreks();
   const router = useRouter();
-  const { hero, stats, features, cta, regions } = data.home;
+  const { hero, stats, features, cta, regions, sections, levelBlurbs } = data.home;
   const currency = data.settings.currency;
 
   const featured = useMemo(() => {
@@ -141,7 +140,7 @@ export default function HomePage() {
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-pine-800/50">Difficulty</span>
                 <select value={finder.difficulty} onChange={(e) => setFinder({ ...finder, difficulty: e.target.value })} className="-ml-1 w-full bg-transparent text-sm font-semibold outline-none">
                   <option value="">Any level</option>
-                  {DIFFICULTIES.map((d) => <option key={d.level}>{d.level}</option>)}
+                  {LEVELS.map((level) => <option key={level}>{level}</option>)}
                 </select>
               </span>
             </label>
@@ -170,7 +169,7 @@ export default function HomePage() {
       <section className="py-24 sm:py-32">
         <div className="container-x">
           <Reveal className="mb-14 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <SectionHeading eyebrow="Featured trails" title={<>Treks our trekkers <span className="text-ember-600">can't stop</span> talking about</>} />
+            <Heading copy={sections.featured} />
             <ButtonLink href="/trips" variant="outline" className="self-start md:self-auto">
               View all {treks.length} treks <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </ButtonLink>
@@ -245,10 +244,10 @@ export default function HomePage() {
       <section className="py-24 sm:py-32">
         <div className="container-x">
           <Reveal>
-            <SectionHeading align="center" eyebrow="Find your level" title="Every summit starts with the right trail" subtitle="Pick the challenge that suits you. Every trek includes a training plan and a pre-departure call with your trek leader." />
+            <Heading align="center" copy={sections.levels} />
           </Reveal>
           <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {DIFFICULTIES.map((d, i) => (
+            {LEVELS.map((level) => ({ level, blurb: levelBlurbs[level] })).map((d, i) => (
               <Reveal key={d.level} delay={i * 80}>
                 <Link
                   href={`/trips?difficulty=${d.level}`}
@@ -277,7 +276,7 @@ export default function HomePage() {
         <section className="bg-sand-100 py-24 sm:py-32">
           <div className="container-x">
             <Reveal>
-              <SectionHeading eyebrow="Trail stories" title="Heard around the campfire" />
+              <Heading copy={sections.testimonials} />
             </Reveal>
             <div className="mt-14 grid gap-6 lg:grid-cols-12">
               <Reveal className="relative overflow-hidden rounded-[2rem] bg-pine-900 p-8 text-white sm:p-12 lg:col-span-7 lg:row-span-2">
@@ -315,7 +314,7 @@ export default function HomePage() {
         <section className="py-24 sm:py-32">
           <div className="container-x grid gap-12 lg:grid-cols-12">
             <Reveal className="lg:col-span-4">
-              <SectionHeading eyebrow="Good questions" title="Before you lace up" subtitle="Still unsure? Our trek experts are a message away." />
+              <Heading copy={sections.faq} />
               <ButtonLink href="/contact" variant="dark" className="mt-8">
                 Ask us anything <ArrowRight className="h-4 w-4" />
               </ButtonLink>

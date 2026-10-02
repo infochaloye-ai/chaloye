@@ -90,6 +90,10 @@ export interface TeamMember extends BaseEntity {
   order: number;
 }
 
+export interface Subscriber extends BaseEntity {
+  email: string;
+}
+
 export interface Faq extends BaseEntity {
   question: string;
   answer: string;
@@ -108,6 +112,14 @@ export interface FeatureItem {
   icon: string; // key from lib/icons
   title: string;
   description: string;
+}
+
+/** Heading block for a page section. `highlight` is a part of `title` shown in orange. */
+export interface SectionCopy {
+  eyebrow: string;
+  title: string;
+  highlight: string;
+  subtitle: string;
 }
 
 export interface HomeContent {
@@ -133,17 +145,38 @@ export interface HomeContent {
     image: string;
     buttonLabel: string;
   };
+  sections: {
+    featured: SectionCopy;
+    levels: SectionCopy;
+    testimonials: SectionCopy;
+    faq: SectionCopy;
+  };
+  levelBlurbs: Record<Difficulty, string>;
 }
 
 export interface AboutContent {
+  heroEyebrow: string;
   heroTitle: string;
   heroSubtitle: string;
   heroImage: string;
+  storyEyebrow: string;
   storyTitle: string;
   storyParagraphs: string[];
   storyImage: string;
   values: FeatureItem[];
   stats: StatItem[];
+  sections: {
+    values: SectionCopy;
+    team: SectionCopy;
+    cta: SectionCopy;
+  };
+}
+
+/** Banners and images for pages that have no editor of their own. */
+export interface PagesContent {
+  trips: { eyebrow: string; title: string; highlight: string; image: string };
+  contact: SectionCopy & { image: string; formTitle: string; formSubtitle: string };
+  auth: { image: string };
 }
 
 export interface SiteSettings {
@@ -167,6 +200,10 @@ export interface SiteSettings {
     text: string;
     link: string;
   };
+  newsletter: {
+    title: string;
+    subtitle: string;
+  };
 }
 
 // ---------- Registry ----------
@@ -178,11 +215,13 @@ export interface Collections {
   testimonials: Testimonial;
   team: TeamMember;
   faqs: Faq;
+  subscribers: Subscriber;
 }
 
 export interface Singletons {
   home: HomeContent;
   about: AboutContent;
+  pages: PagesContent;
   settings: SiteSettings;
 }
 

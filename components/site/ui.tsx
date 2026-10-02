@@ -116,3 +116,16 @@ export function Avatar({ src, name, className }: { src?: string; name: string; c
     </span>
   );
 }
+
+/** Renders `title`, colouring the first occurrence of `highlight` (both edited in the CMS). */
+export function Highlighted({ title, highlight, className = 'text-ember-600' }: { title: string; highlight?: string; className?: string }) {
+  const at = highlight ? title.indexOf(highlight) : -1;
+  if (!highlight || at === -1) return <>{title}</>;
+  return (
+    <>
+      {title.slice(0, at)}
+      <span className={className}>{highlight}</span>
+      {title.slice(at + highlight.length)}
+    </>
+  );
+}

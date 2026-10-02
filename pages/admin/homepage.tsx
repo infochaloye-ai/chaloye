@@ -3,14 +3,18 @@ import { ExternalLink } from 'lucide-react';
 import { Card, Field, Input, PageHeader, Textarea } from '@/components/admin/ui';
 import { ImageField, StringList } from '@/components/admin/fields';
 import { FeatureListField, StatListField } from '@/components/admin/FeatureListField';
+import { SectionCopyFields } from '@/components/admin/SectionCopyField';
 import { FormGrid, SaveBar, useSingletonDraft } from '@/components/admin/useSingletonDraft';
-import type { HomeContent } from '@/lib/cms/types';
+import type { Difficulty, HomeContent, SectionCopy } from '@/lib/cms/types';
+
+const LEVELS: Difficulty[] = ['Easy', 'Moderate', 'Challenging', 'Expert'];
 
 export default function HomepageAdmin() {
   const { draft, setDraft, dirty, saving, save, discard } = useSingletonDraft('home');
   const hero = draft.hero;
   const setHero = (patch: Partial<HomeContent['hero']>) => setDraft({ ...draft, hero: { ...hero, ...patch } });
   const setCta = (patch: Partial<HomeContent['cta']>) => setDraft({ ...draft, cta: { ...draft.cta, ...patch } });
+  const setSection = (key: keyof HomeContent['sections']) => (v: SectionCopy) => setDraft({ ...draft, sections: { ...draft.sections, [key]: v } });
 
   return (
     <div className="pb-24">
@@ -48,6 +52,32 @@ export default function HomepageAdmin() {
               <Field label="Section subtitle"><Textarea rows={3} value={draft.featuresSubtitle} onChange={(e) => setDraft({ ...draft, featuresSubtitle: e.target.value })} /></Field>
               <ImageField label="Section image" value={draft.featuresImage} onChange={(featuresImage) => setDraft({ ...draft, featuresImage })} aspect="aspect-[4/5]" />
             </div>
+          </Card>
+        </div>
+
+        <Card title="Featured treks · heading" description="Above the featured trek cards.">
+          <SectionCopyFields value={draft.sections.featured} onChange={setSection('featured')} subtitle={false} />
+        </Card>
+
+        <Card title="Find your level" description="Heading and one line per difficulty.">
+          <div className="space-y-4">
+            <SectionCopyFields value={draft.sections.levels} onChange={setSection('levels')} />
+            <FormGrid>
+              {LEVELS.map((level) => (
+                <Field key={level} label={level}>
+                  <Textarea rows={2} value={draft.levelBlurbs[level]} onChange={(e) => setDraft({ ...draft, levelBlurbs: { ...draft.levelBlurbs, [level]: e.target.value } })} />
+                </Field>
+              ))}
+            </FormGrid>
+          </div>
+        </Card>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card title="Testimonials · heading">
+            <SectionCopyFields value={draft.sections.testimonials} onChange={setSection('testimonials')} subtitle={false} />
+          </Card>
+          <Card title="FAQ · heading">
+            <SectionCopyFields value={draft.sections.faq} onChange={setSection('faq')} />
           </Card>
         </div>
 

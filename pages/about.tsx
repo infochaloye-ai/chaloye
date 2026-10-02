@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { useCMS } from '@/context/CMSContext';
 import PageHero from '@/components/site/PageHero';
 import Reveal from '@/components/site/Reveal';
-import { Avatar, ButtonLink, SectionHeading } from '@/components/site/ui';
+import { Avatar, ButtonLink, Highlighted, SectionHeading } from '@/components/site/ui';
 import { getIcon } from '@/lib/icons';
 
 export default function AboutPage() {
@@ -18,7 +18,7 @@ export default function AboutPage() {
         <title>{`About us · ${data.settings.siteName}`}</title>
       </Head>
 
-      <PageHero eyebrow="Our story" title={a.heroTitle} subtitle={a.heroSubtitle} image={a.heroImage} />
+      <PageHero eyebrow={a.heroEyebrow} title={a.heroTitle} subtitle={a.heroSubtitle} image={a.heroImage} />
 
       {/* Stats */}
       <section className="container-x relative z-10 -mt-12">
@@ -37,7 +37,7 @@ export default function AboutPage() {
         <div className="container-x grid items-center gap-16 lg:grid-cols-2">
           <div>
             <Reveal>
-              <SectionHeading eyebrow="How it began" title={a.storyTitle} />
+              <SectionHeading eyebrow={a.storyEyebrow} title={a.storyTitle} />
             </Reveal>
             <div className="mt-8 space-y-5">
               {a.storyParagraphs.map((p, i) => (
@@ -63,7 +63,7 @@ export default function AboutPage() {
       <section className="topo relative bg-pine-900 py-24 text-white sm:py-32">
         <div className="container-x">
           <Reveal>
-            <SectionHeading tone="light" eyebrow="What we stand for" title="Values we carry up every mountain" />
+            <SectionHeading tone="light" eyebrow={a.sections.values.eyebrow} title={<Highlighted title={a.sections.values.title} highlight={a.sections.values.highlight} className="text-ember-400" />} subtitle={a.sections.values.subtitle} />
           </Reveal>
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {a.values.map((v, i) => {
@@ -87,7 +87,7 @@ export default function AboutPage() {
         <section className="py-24 sm:py-32">
           <div className="container-x">
             <Reveal>
-              <SectionHeading align="center" eyebrow="The crew" title="People who'll walk beside you" />
+              <SectionHeading align="center" eyebrow={a.sections.team.eyebrow} title={<Highlighted title={a.sections.team.title} highlight={a.sections.team.highlight} />} subtitle={a.sections.team.subtitle} />
             </Reveal>
             <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {team.map((m, i) => (
@@ -111,7 +111,7 @@ export default function AboutPage() {
 
       <section className="px-5 pb-24 sm:px-8 lg:px-12">
         <Reveal className="mx-auto flex max-w-[1224px] flex-col items-start justify-between gap-8 rounded-[2.5rem] bg-sand-100 p-10 sm:p-14 lg:flex-row lg:items-center">
-          <h2 className="max-w-xl text-4xl font-bold leading-tight">Ready to walk with us?</h2>
+          <h2 className="max-w-xl text-4xl font-bold leading-tight"><Highlighted title={a.sections.cta.title} highlight={a.sections.cta.highlight} /></h2>
           <div className="flex flex-wrap gap-3">
             <ButtonLink href="/trips">Explore treks <ArrowRight className="h-4 w-4" /></ButtonLink>
             <ButtonLink href="/contact" variant="outline">Get in touch</ButtonLink>

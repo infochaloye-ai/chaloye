@@ -2,13 +2,32 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Facebook, Instagram, Mail, MapPin, Phone, Twitter, Youtube } from 'lucide-react';
 import Logo from './Logo';
-import { usePublishedTreks, useSettings } from '@/context/CMSContext';
+import { useCMS, usePublishedTreks, useSettings } from '@/context/CMSContext';
 
 export default function Footer() {
   const s = useSettings();
   const treks = usePublishedTreks();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+  const { create } = useCMS();
+
+  const subscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSending(true);
+    try {
+      await create('subscribers', { email: email.trim().toLowerCase() });
+      setSubscribed(true);
+    } catch (err) {
+      // Already subscribed counts as success.
+      if (err instanceof Error && err.message.includes('duplicate key')) setSubscribed(true);
+      else setError('Could not subscribe right now. Please try again.');
+    } finally {
+      setSending(false);
+    }
+  };
 
   const socials = [
     { href: s.socials.instagram, icon: Instagram, label: 'Instagram' },
@@ -23,17 +42,14 @@ export default function Footer() {
         {/* Newsletter */}
         <div className="flex flex-col gap-8 border-b border-white/10 pb-14 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-xl">
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">Trail notes, once a month.</h2>
-            <p className="mt-3 text-white/60">New departures, early-bird prices and the occasional mountain story. No spam, ever.</p>
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">{s.newsletter.title}</h2>
+            <p className="mt-3 text-white/60">{s.newsletter.subtitle}</p>
           </div>
           {subscribed ? (
             <p className="rounded-full bg-white/10 px-6 py-4 text-sm font-medium text-white">You're on the list. See you on the trail.</p>
           ) : (
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (email) setSubscribed(true);
-              }}
+              onSubmit={subscribe}
               className="flex w-full max-w-md items-center gap-2 rounded-full bg-white/10 p-1.5 ring-1 ring-white/10 focus-within:ring-ember-400"
             >
               <label htmlFor="newsletter" className="sr-only">Email address</label>
@@ -46,11 +62,12 @@ export default function Footer() {
                 placeholder="you@email.com"
                 className="min-w-0 flex-1 bg-transparent px-4 text-sm text-white outline-none placeholder:text-white/40"
               />
-              <button className="inline-flex items-center gap-1.5 rounded-full bg-ember-500 px-5 py-3 text-sm font-semibold text-pine-950 transition-colors hover:bg-ember-400">
-                Subscribe <ArrowRight className="h-4 w-4" />
+              <button disabled={sending} className="inline-flex items-center gap-1.5 rounded-full bg-ember-500 px-5 py-3 text-sm font-semibold text-pine-950 transition-colors hover:bg-ember-400 disabled:opacity-60">
+                {sending ? 'Subscribing…' : <>Subscribe <ArrowRight className="h-4 w-4" /></>}
               </button>
             </form>
           )}
+          {error && <p className="text-sm font-medium text-rose-300">{error}</p>}
         </div>
 
         <div className="grid gap-12 py-14 sm:grid-cols-2 lg:grid-cols-12">

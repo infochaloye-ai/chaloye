@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import AuthShell, { authInput } from '@/components/site/AuthShell';
+import AuthShell, { authInput, GoogleSignIn } from '@/components/site/AuthShell';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -18,14 +18,15 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const ok = await login(email, password);
+    const res = await login(email, password);
     setLoading(false);
-    if (ok) router.push((router.query.next as string) || '/account');
-    else setError('Invalid email or password.');
+    if (res.ok) router.push((router.query.next as string) || '/account');
+    else setError(res.error);
   };
 
   return (
     <AuthShell title="Welcome back" subtitle={<>New here? <Link href="/signup" className="font-semibold text-ember-600 hover:underline">Create an account</Link></>}>
+      <GoogleSignIn next={(router.query.next as string) || '/account'} />
       <form onSubmit={submit} className="space-y-4">
         <input required type="email" autoComplete="email" placeholder="Email address" className={authInput} value={email} onChange={(e) => setEmail(e.target.value)} />
         <div className="relative">

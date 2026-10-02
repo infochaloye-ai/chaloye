@@ -9,13 +9,16 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
-    await resetPassword(email);
+    const res = await resetPassword(email);
     setLoading(false);
-    setSent(true);
+    if (res.ok) setSent(true);
+    else setError(res.error);
   };
 
   return (
@@ -28,6 +31,7 @@ export default function ForgotPasswordPage() {
       ) : (
         <form onSubmit={submit} className="space-y-4">
           <input required type="email" autoComplete="email" placeholder="Email address" className={authInput} value={email} onChange={(e) => setEmail(e.target.value)} />
+          {error && <p className="text-sm font-medium text-rose-600">{error}</p>}
           <button disabled={loading} className="w-full rounded-full bg-pine-900 py-4 font-semibold text-white transition-colors hover:bg-pine-800 disabled:opacity-60">
             {loading ? 'Sending…' : 'Send reset link'}
           </button>

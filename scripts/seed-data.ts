@@ -1,27 +1,8 @@
-import type { CMSSnapshot } from './types';
+import type { CMSSnapshot } from '../lib/cms/types';
+import { IMAGES, px } from '../lib/images';
 
-// Mock content used until Supabase is connected. Admins can edit all of it from /admin,
-// and "Reset demo data" in Settings restores this file.
-
-const px = (id: number, w = 1600) =>
-  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${w}`;
-
-export const IMAGES = {
-  everest: px(691668),
-  annapurna: px(1271619),
-  alps: px(1624496),
-  patagonia: px(1566837),
-  kilimanjaro: px(1365425),
-  andes: px(1252814),
-  dolomites: px(1440476),
-  ridge: px(1647962),
-  towers: px(1559821),
-  tentSunset: px(2398220),
-  forestTrail: px(1578750),
-  lake: px(417074),
-  snowMoon: px(1287145),
-  lonePeak: px(1054218),
-};
+// Starter content loaded into Supabase by scripts/seed-supabase.ts.
+// The site never reads this file; edit live content from /admin instead.
 
 const portrait = (id: number) => px(id, 400);
 
@@ -382,6 +363,8 @@ export const seed: CMSSnapshot = {
     { ...meta('tm-3'), name: 'Arjun Thakur', role: 'Senior Trek Leader', bio: 'Wilderness first responder with a habit of finding the best sunrise spot on every trail.', photo: portrait(1239291), order: 3 },
   ],
 
+  subscribers: [],
+
   faqs: [
     { ...meta('faq-1'), question: 'I have never trekked before. Which trek should I start with?', answer: 'Kedarkantha (winter) or Valley of Flowers (monsoon) are ideal first treks. Both are well-marked, have comfortable campsites and gradual altitude gain.', order: 1, published: true },
     { ...meta('faq-2'), question: 'How fit do I need to be?', answer: 'You should be able to jog 5 km in under 35 minutes before an Easy or Moderate trek. We send a 6-week fitness plan after you book.', order: 2, published: true },
@@ -424,12 +407,26 @@ export const seed: CMSSnapshot = {
       image: IMAGES.dolomites,
       buttonLabel: 'Plan my trek',
     },
+    sections: {
+      featured: { eyebrow: 'Featured trails', title: "Treks our trekkers can't stop talking about", highlight: "can't stop", subtitle: '' },
+      levels: { eyebrow: 'Find your level', title: 'Every summit starts with the right trail', highlight: '', subtitle: 'Pick the challenge that suits you. Every trek includes a training plan and a pre-departure call with your trek leader.' },
+      testimonials: { eyebrow: 'Trail stories', title: 'Heard around the campfire', highlight: '', subtitle: '' },
+      faq: { eyebrow: 'Good questions', title: 'Before you lace up', highlight: '', subtitle: 'Still unsure? Our trek experts are a message away.' },
+    },
+    levelBlurbs: {
+      Easy: 'Gentle trails and comfortable camps. Perfect for your first Himalayan trek.',
+      Moderate: 'Longer days and a summit push. Needs a few weeks of training.',
+      Challenging: 'High passes and big altitude gains for trekkers with some experience.',
+      Expert: 'Remote, demanding expeditions for seasoned high-altitude trekkers.',
+    },
   },
 
   about: {
+    heroEyebrow: 'Our story',
     heroTitle: 'We are Chal Oye.',
     heroSubtitle: 'A team of mountain people helping city people find their way back to the hills.',
     heroImage: IMAGES.ridge,
+    storyEyebrow: 'How it began',
     storyTitle: 'It started with a single trek and a borrowed tent.',
     storyParagraphs: [
       'In 2011, our founder Tenzing led six friends up Kedarkantha with a borrowed tent and a pressure cooker. By the summit, three of them had already asked about the next trip.',
@@ -449,6 +446,25 @@ export const seed: CMSSnapshot = {
       { value: '18k+', label: 'Trekkers' },
       { value: '45', label: 'Trails' },
     ],
+    sections: {
+      values: { eyebrow: 'What we stand for', title: 'Values we carry up every mountain', highlight: '', subtitle: '' },
+      team: { eyebrow: 'The crew', title: "People who'll walk beside you", highlight: '', subtitle: '' },
+      cta: { eyebrow: '', title: 'Ready to walk with us?', highlight: '', subtitle: '' },
+    },
+  },
+
+  pages: {
+    trips: { eyebrow: 'handpicked trails', title: "Find the trek that's calling you.", highlight: 'calling you.', image: IMAGES.snowMoon },
+    contact: {
+      eyebrow: 'Get in touch',
+      title: "Let's plan your next climb.",
+      highlight: 'next climb.',
+      subtitle: 'Questions about fitness, gear or which trek suits you? Our trek experts usually reply within the hour.',
+      image: IMAGES.tentSunset,
+      formTitle: 'Send us a message',
+      formSubtitle: "Fill in the form and we'll be in touch.",
+    },
+    auth: { image: IMAGES.lonePeak },
   },
 
   settings: {
@@ -471,6 +487,10 @@ export const seed: CMSSnapshot = {
       enabled: true,
       text: 'Winter 2026 batches are open: Kedarkantha & Brahmatal from ₹9,999',
       link: '/trips',
+    },
+    newsletter: {
+      title: 'Trail notes, once a month.',
+      subtitle: 'New departures, early-bird prices and the occasional mountain story. No spam, ever.',
     },
   },
 };
